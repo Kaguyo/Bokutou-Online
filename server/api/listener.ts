@@ -3,14 +3,15 @@ import Subscriber from "./subscriber.js";
 import Player from "../application/player.js";
 
 export default class Listener {
-  static receiveConnection(player: any, socket: Socket) { // NOTE: Changed type to 'any' for POJO safety
-    const p = new Player( // New instance created (p)
+  static receiveConnection(player: any, socket: Socket) {
+    const p = new Player(
       player.id,
       player.nickname,
       player.level,
       player.status,
       socket
     );
+
     Player.onlinePlayerlist.push(p);
     
     console.log('New player connected:', p.socket.id);

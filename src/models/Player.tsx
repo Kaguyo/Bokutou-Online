@@ -1,19 +1,20 @@
-import { Socket } from "socket.io-client";
+import envUser from '../../env.user.json'
+import envDB from '../../env.db.json'
 
 export default class Player {
-    id: string;
-    nickname: string;
-    socket: Socket; 
-    level: number;
-    status: string;
+  id: number;
+  nickname: string;
+  socketId: string;
+  level: number;
+  status: string;
 
-    static onlinePlayerlist: Player[] = [];
+  static onlinePlayerlist: Player[] = [];
 
-    constructor(id: string, nickname: string, socket: Socket, status: string = "Online", level: number = 1) {
-        this.id = id;
-        this.nickname = nickname;
-        this.socket = socket;
-        this.level = level;
-        this.status = status;
-    }
+  constructor(socketId: string) {
+    this.id = envDB.lastId;
+    this.nickname = envUser.nickname;
+    this.socketId = socketId;
+    this.level = envUser.level;
+    this.status = "Online";
+  }
 }

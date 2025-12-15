@@ -4,11 +4,13 @@ import { PlayerProvider } from './contexts/PlayerContext';
 import MainMenu from './components/MainMenu';
 
 function App() {
+  const [onlinePlayers, setOnlinePlayers] = React.useState([]);
+
   return (
     <PlayerProvider>
       <h1>Bokutou no Game</h1>
       <div className="game-screen">
-        <MainMenu />
+        <MainMenu/>
       </div>
     </PlayerProvider>
   )

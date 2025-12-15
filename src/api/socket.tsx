@@ -14,4 +14,6 @@ interface ClientToServerEvents {
 export const socket: Socket<ServerToClientEvents, ClientToServerEvents> =
   io(env.SERVER_URL, {
     autoConnect: false,
+    transports: ["websocket"]
   });
+  
