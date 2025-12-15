@@ -1,10 +1,10 @@
 import express from "express";
 import http from "http";
 import cors from "cors";
-import { Server } from "socket.io";
+import { Server as IOServer, Socket } from "socket.io";
 import Listener from "./api/listener.js";
 import Player from "./application/player.js";
-import Subscriber from "./api/subscriber.js";
+import Subscriber from "./api/subscriber.js"; 
 
 interface ClientToServerEvents {
   clt_sending_player: (player: Player) => void;
@@ -14,28 +14,39 @@ interface ServerToClientEvents {
   svr_global_connected_players: (players: Player[]) => void;
 }
 
+interface ClientPlayerInput {
+  id: string;
+  nickname: string;
+  level: number;
+  status: string;
+}
+
 const app = express();
 app.use(cors());
 
 const server = http.createServer(app);
-import { Server as IOServer } from 'socket.io';
 
-const io = new IOServer<ClientToServerEvents,ServerToClientEvents>(server, {
+const io = new IOServer<ClientToServerEvents, ServerToClientEvents>(server, {
   cors: { origin: '*' }
 });
 
-io.on('clt_sending_player', (player: Player) => {
-  Listener.receiveConnection(player);
-  Subscriber.answerConnection(player.socket, io);
+io.on('connection', (socket: Socket) => {
+  console.log(`User connected with ID: ${socket.id}`);
 
-  player.socket.on('disconnect', () => {
-    Listener.receiveDisconnection(player);
-    Subscriber.answerDisconnection(player.socket, io);
+  socket.on('clt_sending_player', (playerData: ClientPlayerInput) => {
+    Listener.receiveConnection(playerData, socket);
+    Subscriber.answerConnection(socket, io); 
+  });
+
+  socket.on('disconnect', () => {
+    console.log(`User disconnected with ID: ${socket.id}`);
+    Listener.receiveDisconnection(socket);
+    Subscriber.answerDisconnection(socket, io);
   });
 });
 
+// --- Server Listener ---
 const PORT = 4000;
 server.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
 });
-
