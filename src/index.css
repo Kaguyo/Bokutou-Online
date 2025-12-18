@@ -19,5 +19,10 @@ header {
 
   height: 840px;
   width: 1366px;
-  background-color:rgb(44, 44, 44)
+  background-color:rgb(255, 255, 255);
+  border: solid 1px black;
+}
+
+body {
+  background-color: black;
 }

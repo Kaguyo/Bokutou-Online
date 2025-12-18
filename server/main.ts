@@ -31,8 +31,8 @@ const io = new IOServer<ClientToServerEvents, ServerToClientEvents>(server, {
 });
 
 io.on('connection', (socket: Socket) => {
+  
   console.log(`User connected with ID: ${socket.id}`);
-
   socket.on('clt_sending_player', (playerData: ClientPlayerInput) => {
     Listener.receiveConnection(playerData, socket);
     Subscriber.answerConnection(socket, io); 

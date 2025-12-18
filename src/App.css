@@ -40,3 +40,43 @@
 .read-the-docs {
   color: #888;
 }
+
+#profile-template {
+  background-color: black;
+  color: white;
+  position: absolute;
+  margin-top: 20px;
+  margin-left: -1000px;
+  width: 270px;
+  border-radius: 25px;
+  height: 110px;
+  align-items: center;
+  display: grid;
+  grid-auto-flow: column;
+  justify-content: start;
+}
+
+#profile-icon {
+  margin-left: 10px;
+  background-color:#888;
+  width: 96px;
+  border-radius: 20%;
+  height: 96px;
+}
+
+#user-info {
+  /* background-color:red; */
+  font-size: 23px;
+  font-family: Arial;
+  width: 100px;
+}
+
+.us-info-item:hover {
+
+}
+
+#img-pfp {
+  width: 96px;
+  height: 96px;
+  border-radius: 20%;
+}
