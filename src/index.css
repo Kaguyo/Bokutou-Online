@@ -1,0 +1,38 @@
+* {
+  margin: 0;
+}
+
+header {
+  height:120px;
+  background-color:rgb(24, 24, 24);
+  width: 100vw;
+  margin-bottom:50px;
+}
+
+.game-screen {
+  position: relative;
+  left: 50%;
+  transform: translate(-50%);
+  display: flex;
+
+  justify-content: center;
+
+  height: 840px;
+  width: 1366px;
+  background-color:rgb(255, 255, 255);
+  border: solid 1px black;
+
+  user-select: none; /* Standard */
+  -webkit-user-select: none; /* Chrome/Safari */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* IE/Edge */
+}
+
+body {
+  background-color: black;
+}
+
+html::-webkit-scrollbar {
+  width: 0px;
+  height: 0px;
+}

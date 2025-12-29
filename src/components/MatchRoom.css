@@ -1,0 +1,103 @@
+#multiplayer-room-wrapper {
+    left: 3%;
+    top: 50%;
+    transform: translateY(-50%);
+    position: absolute;
+    border: solid 1px #f0f0f0;
+    visibility: hidden;
+}
+
+#multiplayer-room-options {
+    background-color: white;
+    height: 50px;
+    border: solid 1px #f0f0f0;
+    width: 0px;
+    transition: width 0.3s;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-around;
+}
+
+#multiplayer-room-options #lock-container, #multiplayer-room-options #invite-player-container {
+    height: 40px;
+    border-radius: 50%;
+    width: 40px;
+    font-family: Arial;
+    font-size: 32px;
+    color: white;
+    align-items: center;
+    justify-content: center;
+    display: flex;
+    background-color: #f0f0f0;
+
+}
+
+#invite-player-container:hover {
+    cursor: pointer;
+}
+
+#multiplayer-room-box {
+    background-color: transparent;
+    border: solid 1px #f0f0f0;
+    width: 0px;
+    border-radius: 6px;
+    max-height: 200px;
+    transition: width 0.3s;
+    overflow-y: scroll;
+    visibility: hidden;
+    display: flex;
+    flex-direction: column;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+#multiplayer-room-box::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+}
+
+.multiplayer-room-item {
+    background-color: rgb(255, 255, 255);
+    height: 50px;
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    border-bottom: 1px solid #f0f0f0;
+    min-height: 50px;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.player-name-container {
+    height: 100%;
+    max-width: 150px;
+    overflow: hidden;
+    font-size: 18px;
+    font-family: Arial;
+    display:flex;
+    align-items: center;
+}
+
+.player-level-container {
+    height: 100%;
+    max-width: 150px;
+    overflow: hidden;
+    font-size: 18px;
+    font-family: Arial;
+    display:flex;
+    align-items: center;
+}
+
+.profile-picture-container {
+    width: 32px;
+    height: 32px;
+}
+
+.profile-picture-container img {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+}

@@ -1,0 +1,104 @@
+.main-menu {
+  margin-top: 350px;
+  width: 400px;
+  height: fit-content;
+  padding: 15px;
+  border-radius: 8px;
+  background: #f0f0f0;
+}
+
+.difficulty-btn, .team-size-btn {
+  display: flex;
+  justify-content: space-between;
+}
+
+.difficulty-btn div, .team-size-btn div {
+  width: 30%;
+  height: 100%;
+}
+
+.team-size-btn p {
+  position: absolute;
+  left: 62%;
+}
+
+.difficulty-btn div:hover, .team-size-btn div:hover{
+  color: rgb(101, 245, 255);
+  scale: 1.7;
+}
+
+.menu-item, .difficulty-btn, .team-size-btn {
+  position: relative;
+  overflow: hidden;
+  font-family: 'Franklin Gothic Medium';
+  padding: 10px 15px;
+  margin: 5px 0;
+  cursor: pointer;
+  text-align: center;
+  font-size: 1.1em;
+  color: #000000;
+  background-color: white;
+  transition: all 0.3s ease;
+}
+
+.menu-item::before, .difficulty-btn::before, .team-size-btn::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: -100%;
+  width: 100%;
+  height: 2px;
+  background-color: #ff8888;
+  transform: translateY(-50%) skewX(-45deg);
+}
+
+.menu-item:hover, .difficulty-btn:hover, .team-size-btn:hover{
+  color: #ff8888;
+
+  animation: pulse-border 1.5s infinite 0.3s; 
+}
+
+.menu-item:hover::before, .difficulty-btn:hover::before, .team-size-btn:hover::before {
+  animation: slash-pass 0.3s forwards ease-in-out;
+}
+
+@keyframes slash-pass {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+@keyframes pulse-border {
+  0% {
+    box-shadow: 0 0 0 0px rgba(255, 136, 136, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(255, 136, 136, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0px rgba(255, 136, 136, 0);
+  }
+}
+
+#menu-list {
+  padding-left: 0;
+  list-style: none;
+}
+
+.active-players-menu {
+  margin-top: 100px;
+  opacity: 0.6;
+  border-radius: 12px;
+  width: 800px;
+  height: 700px;
+  background-color:black;
+  display: flex;
+  flex-direction: column;
+}
+
+#nickname-row, #status-row, #level-row, #actions-row {
+  height: 100%;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+  width:28%;
+}
