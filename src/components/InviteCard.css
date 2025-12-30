@@ -1,14 +1,22 @@
-.invite-card-box {
+#invite-card-box {
     width: 400px;
     height: 170px;
     background-color: rgba(255, 255, 255, 0.774);
     border: 1px solid #f0f0f0;
     border-radius: 8px;
     position: absolute;
+    margin-top: -170px;
+    transition: margin-top 0.2s;
     font-family: Arial;
+    visibility: hidden;
 }
 
-.invite-card-box .invite-card {
+#invite-card-box.active {
+    visibility: visible;
+    margin-top: 10px;
+}
+
+#invite-card-box .invite-card {
     background-color: rgba(255, 255, 255, 0.74);
     width: 100%;
     height: 100%;
@@ -71,4 +79,50 @@
     white-space: nowrap;     /* prevent wrapping */
     overflow: hidden;        /* hide overflow */
     text-overflow: ellipsis; /* show ... */
+}
+
+.response-options-box {
+    width: 120px;
+    height: 50px;
+    display: flex;
+    justify-content: space-around;
+    margin-left: 50%;
+    margin-top: 8px;
+    transform: translateX(-50%);
+}
+
+.response-options-box .response-container {
+    width:50px;
+    height:50px;
+    border-radius:50%;
+    font-size: 26px;
+    align-items: center;
+    display: flex;
+    justify-content: center;
+}
+
+.response-options-box #yes {
+  background: radial-gradient(ellipse at center,
+    rgba(255,255,255,1) 0%,      /* branco total no centro */
+    rgba(255,255,255,0.9) 40%,   /* ainda quase branco */
+    rgba(0,0,0,0.3) 75%,         /* começa a ficar escuro */
+    rgba(0,0,0,0.6) 100%        /* borda escura forte */
+    );
+
+  box-shadow: inset 0 0 0 5px rgba(100,255,100,0.8);
+  color: rgb(100, 255, 100);
+}
+
+.response-options-box #no {
+    box-shadow: inset 0 0 0 5px rgba(255, 0, 0, 0.8);
+    color:rgb(255, 0, 0);
+    
+    background: radial-gradient(
+        ellipse at center,
+        rgba(255,255,255,1) 0%,
+        rgba(255,255,255,0.9) 40%,
+        rgba(0,0,0,0.3) 75%,
+        rgba(0,0,0,0.6) 100%
+    );
+
 }

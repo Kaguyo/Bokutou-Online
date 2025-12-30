@@ -13,22 +13,26 @@ export function InviteCard(): JSX.Element | null {
     
     useEffect(() => {
         if (!firstInvite) return;
+        const inviteCard = document.getElementById("invite-card-box");
 
         const timer = setTimeout(() => {
+            inviteCard?.classList.remove('active');
             setInviteList(prev => prev!.slice(1));
         }, 10000); // 10s
+        
+        if (inviteCard) {
+            inviteCard.classList.add('active');
+        }
 
         return () => clearTimeout(timer);
     }, [firstInvite, setInviteList]);
 
     if (!firstInvite) {
-        console.log(inviteList);
-        return null;
-
+        return <div id="invite-card-box"></div>
     }
 
     return (
-        <div className="invite-card-box">
+        <div id="invite-card-box">
             <div className="invite-card">
                 <div className="content-wrapper">
                     <div className="inviter-container">

@@ -45,9 +45,7 @@ function App() {
               <MainMenu/>
               <MatchRoom/>
               <UserCard/>
-              {inviteList.length > 0 ?
-                <InviteCard />
-              : null}
+              <InviteCard/>
             </div>
           </InviteContext.Provider>
         </UserContext.Provider>
