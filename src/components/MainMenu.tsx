@@ -52,7 +52,7 @@ const MainMenu: React.FC = () => {
       
       profilePictureContainer.className = "profile-picture-container";
       const profilePicture = document.createElement('img');
-      profilePicture.src = "../../public/gohan.jpg";
+      profilePicture.src = "/gohan.jpg";
       profilePicture.alt = "IMG";
       profilePicture.className = "profile-picture";
       

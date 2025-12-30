@@ -47,7 +47,7 @@ function App() {
               <UserCard/>
               {inviteList.length > 0 ?
                 <InviteCard />
-              : <div id="VAZIA"></div>}
+              : null}
             </div>
           </InviteContext.Provider>
         </UserContext.Provider>
