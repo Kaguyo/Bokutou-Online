@@ -21,19 +21,23 @@ const MainMenu: React.FC = () => {
     4: "INFERNAL"
   }
 
-  function feedMultiplayerRoom(user: Player): void {
-    if (user.MatchRoom.length >= 1)
+  function feedHostRoom(user: User): void {
+    if (user.hosting)
       return;
 
-    user.host = true;
-    user.MatchRoom.push(user);
+    user.hosting = true;
+    user.activeSession = true;
+
+    const roomWrapper = document.getElementById("multiplayer-room-wrapper");
+    if (roomWrapper) {
+      roomWrapper.style.visibility = "visible"
+    }
 
     const roomOptions = document.getElementById("multiplayer-room-options");
     if (roomOptions){
       roomOptions.style.width = "300px";
       roomOptions.style.visibility = "visible";
     }
-    
 
     const roomBox = document.getElementById("multiplayer-room-box");
     if (roomBox) {
@@ -42,6 +46,7 @@ const MainMenu: React.FC = () => {
       
       const roomItem = document.createElement('div');
       roomItem.className = "multiplayer-room-item";
+      roomItem.style.width = "100%";
       
       const profilePictureContainer = document.createElement('div');
       
@@ -56,14 +61,14 @@ const MainMenu: React.FC = () => {
 
       const playerName = document.createElement('p');
       playerName.className = "player-name";
-      playerName.textContent = user.nickname;
+      playerName.textContent = user.nickname!;
 
       const playerLevelContainer = document.createElement('div');
       playerLevelContainer.className = "player-level-container";
       
       const playerLevel = document.createElement('p');
       playerLevel.className = "player-level"
-      playerLevel.textContent = "Lv. "+user.level.toString();
+      playerLevel.textContent = "Lv. "+user.level!.toString();
 
       profilePictureContainer.appendChild(profilePicture);
       playerNameContainer.appendChild(playerName);
@@ -95,19 +100,12 @@ const MainMenu: React.FC = () => {
       if (socketCtx?.connected) {
         if (!userCtx?.me) {
           user = new User(socketCtx.id!, userEnv.nickname, userEnv.level, "Online");
-        
-          if (user.socketId != "" && user.socketId) {
-            // Futuramente adicionar throw para propriedades não atribuídas
-            feedMultiplayerRoom(new Player(user.socketId, user.nickname || "", user.level!, user.status!));       
-          }
-
           if (user) {
             userCtx?.setMe(user);
+            feedHostRoom(user); 
           }
 
           socketCtx.emit('clt_sending_player', user);
-        } else {
-          socketCtx.emit('clt_sending_player', userCtx.me);
         }
       
         socketCtx.on('svr_global_connected_players', (playerList: Player[]) => {

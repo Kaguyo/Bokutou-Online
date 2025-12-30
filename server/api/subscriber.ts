@@ -17,7 +17,7 @@ interface ServerToClientEvents {
 
 export default class Subscriber {
   private static getSerializablePlayerList(): PlayerData[] {
-    return Player.onlinePlayerlist.map(player => player.toData());
+    return Player.globalPlayerList.map(player => player.toData());
   }
 
   static answerConnection(socket: Socket, io: Server) {

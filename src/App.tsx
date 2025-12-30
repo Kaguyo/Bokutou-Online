@@ -18,9 +18,9 @@ function App() {
         <UserContext.Provider value={{me, setMe}}>
           <h1>Bokutou no Game</h1>
           <div className="game-screen">
+            <MainMenu/>
             <MatchRoom/>
             <UserCard/>
-            <MainMenu/>
           </div>
         </UserContext.Provider>
       </SocketContext.Provider>

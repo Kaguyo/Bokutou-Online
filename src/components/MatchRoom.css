@@ -5,6 +5,7 @@
     position: absolute;
     border: solid 1px #f0f0f0;
     visibility: hidden;
+    border-radius: 6px;
 }
 
 #multiplayer-room-options {
@@ -31,11 +32,13 @@
     justify-content: center;
     display: flex;
     background-color: #f0f0f0;
-
+    
 }
 
-#invite-player-container:hover {
+#multiplayer-room-options #invite-player-container:hover {
     cursor: pointer;
+    transition: 0.2s;
+    background-color: rgb(195, 195, 195);
 }
 
 #multiplayer-room-box {
@@ -61,14 +64,13 @@
 .multiplayer-room-item {
     background-color: rgb(255, 255, 255);
     height: 50px;
-    width: 100%;
+    width: 0%;
+    transition: width 0.3s;
     display: flex;
     justify-content: space-around;
     align-items: center;
     border-bottom: 1px solid #f0f0f0;
     min-height: 50px;
-    white-space: nowrap;
-    overflow: hidden;
 }
 
 .player-name-container {
@@ -91,6 +93,15 @@
     align-items: center;
 }
 
+.player-name-container p,
+.player-level-container p{
+    flex: 1;                 /* let it shrink/grow inside flex */
+    min-width: 0;            /* allow proper overflow handling */
+    white-space: nowrap;     /* prevent wrapping */
+    overflow: hidden;        /* hide overflow */
+    text-overflow: ellipsis; /* show ... */
+}
+
 .profile-picture-container {
     width: 32px;
     height: 32px;
@@ -100,4 +111,123 @@
     width: 32px;
     height: 32px;
     border-radius: 50%;
+}
+
+#global-playerlist-container {
+    width: 0px;
+    height: 0px;
+    transition: 0.2s;
+    background-color: #f0f0f083;
+    position: absolute;
+    overflow-y: scroll;
+    top: 50%;
+    transform: translateY(-50%);
+    visibility: hidden;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+#global-playerlist-container.active {
+    width: 500px;
+    height: 400px;
+    visibility: visible;
+}
+
+#global-playerlist-container #options-bar {
+    height: 40px;
+    width: 100%;
+    background-color: rgb(252, 252, 252);
+    display: flex;
+    align-items: center;
+    justify-content: end;
+}
+
+#options-bar #exit-btn {
+    height: 40px;
+    width: 40px;
+    background-color: rgb(255, 0, 0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: Arial;
+    color: white;
+    font-size: 20px;
+    font-weight: bold;
+    border-radius: 4px;
+    transition: 0.2s;
+    /* position: relative;
+    transform: translateX(-100%);
+    left: 100%; */
+}
+
+#options-bar #exit-btn:hover {
+    background-color: rgb(190, 0, 0);
+    cursor: pointer;
+}
+
+.global-playerlist-item {
+    width: 100%;
+    height: 50px;
+    background-color:white;
+    color: black;
+    font-family: Arial;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    border-radius: 4px;
+    align-items: center;
+    justify-content: space-around;
+    
+}
+
+.global-playerlist-item .item-profile-container {
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+}
+
+.item-profile-container img {
+    width: 100%;
+    border-radius: 50%;
+    height: 100%;
+}
+
+.item-add-friend-container,
+.item-invite-player-container {
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    background-color: #f0f0f0;
+    font-size: 32px;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.item-nickname-container,
+.item-level-container,
+.item-status-container {
+    width: 15%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    overflow: hidden;
+    font-size: 18px;
+}
+
+.item-nickname-container {
+    width: 30%; /* Overrides previous width above for nickname box*/
+    justify-content: start;
+}
+
+.item-nickname-container span,
+.item-level-container span,
+.item-status-container span {
+    flex: 1;                 /* let it shrink/grow inside flex */
+    min-width: 0;            /* allow proper overflow handling */
+    white-space: nowrap;     /* prevent wrapping */
+    overflow: hidden;        /* hide overflow */
+    text-overflow: ellipsis; /* show ... */
 }
