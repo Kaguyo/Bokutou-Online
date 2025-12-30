@@ -20,7 +20,11 @@ export function InviteCard(): JSX.Element | null {
         return () => clearTimeout(timer);
     }, [firstInvite, setInviteList]);
 
-    if (!firstInvite) return null;
+    if (!firstInvite) {
+        console.log(inviteList);
+        return null;
+
+    }
 
     return (
         <div className="invite-card">
