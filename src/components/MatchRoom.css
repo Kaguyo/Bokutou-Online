@@ -32,12 +32,12 @@
     justify-content: center;
     display: flex;
     background-color: #f0f0f0;
-    
+    transition: 0.2s;
+
 }
 
-#multiplayer-room-options #invite-player-container:hover {
+#multiplayer-room-options #invite-player-container:hover, #multiplayer-room-options #lock-container:hover {
     cursor: pointer;
-    transition: 0.2s;
     background-color: rgb(195, 195, 195);
 }
 
@@ -202,6 +202,16 @@
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+.item-add-friend-container:hover {
+    cursor: pointer;
+    background-color: rgb(209, 222, 198);
+}
+
+.item-invite-player-container:hover {
+    cursor: pointer;
+    background-color: rgb(195, 195, 195);
 }
 
 .item-nickname-container,

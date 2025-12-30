@@ -3,14 +3,21 @@ import './MatchRoom.css'
 import {UserContext} from '../contexts/UserContext';
 import { User } from "../models/User";
 import { Player } from "../models/Player";
+import { socket } from "../api/socket";
 
 function MatchRoom(): JSX.Element {
     const userCtx = useContext(UserContext);
     const [searchingGlobalPlayers, setSearchingGlobalPlayers] = useState<boolean>(false);
 
-    function handleInvitePlayerBtn(user: User | null | undefined, newMode: boolean): void {
+    function handleGlobalPlayerListBtn(user: User | null | undefined, newMode: boolean): void {
         if (user?.hosting) {
             setSearchingGlobalPlayers(newMode);
+        }
+    }
+
+    function handleInvitePlayerBtn(socketId: string, me: User | null | undefined): void {
+        if (me){
+            socket.emit("clt_inviting_player", socketId, me);
         }
     }
 
@@ -21,7 +28,7 @@ function MatchRoom(): JSX.Element {
 
         const handleKeyDown = (event: KeyboardEvent) => {
             if (event.key === "Escape") {
-                handleInvitePlayerBtn(userCtx?.me, false);
+                handleGlobalPlayerListBtn(userCtx?.me, false);
             }
         };
         
@@ -52,7 +59,7 @@ function MatchRoom(): JSX.Element {
                         <div id="locker"></div>
                     </div>
                     <div id="password-container"></div>
-                    <div id="invite-player-container" onClick={() => handleInvitePlayerBtn(userCtx?.me, true)}>+</div>
+                    <div id="invite-player-container" onClick={() => handleGlobalPlayerListBtn(userCtx?.me, true)}>+</div>
                 </div>
                 <div id="multiplayer-room-box">
 
@@ -62,7 +69,7 @@ function MatchRoom(): JSX.Element {
 
             <div id="global-playerlist-container">
                 <div id="options-bar">
-                    <div id="exit-btn"onClick={() => handleInvitePlayerBtn(userCtx?.me, false)}></div>
+                    <div id="exit-btn"onClick={() => handleGlobalPlayerListBtn(userCtx?.me, false)}></div>
                 </div>
                 <div>
                     {
@@ -73,7 +80,7 @@ function MatchRoom(): JSX.Element {
                                 <div className="item-level-container"><span>Lv. {p.level}</span></div>
                                 <div className="item-status-container"><span>{p.status}</span></div>
                                 <div className="item-add-friend-container">+</div>
-                                <div className="item-invite-player-container">+</div>
+                                <div className="item-invite-player-container" onClick={() => handleInvitePlayerBtn(p.socketId, userCtx?.me)}>+</div>
                             </div>
                         )
                     }

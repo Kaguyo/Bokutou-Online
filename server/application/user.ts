@@ -4,6 +4,9 @@ export class User {
     level?: number;
     status?: string;
 
+    activeSession: boolean = false; // tracks whether the user is within a matching room
+    hosting: boolean = false; // tracks whether the user is hosting a matching room
+
     constructor(socketId: string | undefined, nickname: string, level: number, status: string){
         this.socketId =  socketId;
         this.nickname = nickname;

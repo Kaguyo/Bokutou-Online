@@ -5,13 +5,16 @@ import { Server as IOServer, Socket } from "socket.io";
 import Listener from "./api/listener.js";
 import Player from "./application/player.js";
 import Subscriber from "./api/subscriber.js"; 
+import { User } from "./application/user.js";
 
 interface ClientToServerEvents {
   clt_sending_player: (player: Player) => void;
+  clt_inviting_player: (socketId: string, inviter: User) => void;
 }
 
 interface ServerToClientEvents {
   svr_global_connected_players: (players: Player[]) => void;
+  svr_transfer_invite: (inviter: User) => void;
 }
 
 interface ClientPlayerInput {
@@ -40,6 +43,10 @@ io.on('connection', (socket: Socket) => {
     )
     Listener.receiveConnection(p, socket);
     Subscriber.answerConnection(socket, io); 
+  });
+
+  socket.on('clt_inviting_player', (targetSocketId: string, inviter: User) => {
+    io.to(targetSocketId).emit("svr_transfer_invite", inviter);
   });
 
   socket.on('disconnect', () => {
