@@ -15,14 +15,15 @@ import type { Invite } from './components/InviteCard';
 
 function App() {
   const [me, setMe] = useState<User | null>(null);
-  const { inviteList, setInviteList } = useContext(InviteContext)!;
+  const [inviteList, setInviteList] = useState<Invite[]>([]);
 
   useEffect(() => {
     function handleNewInvite(newInviter: User) {
-      if (!inviteList.some(i => i.inviter.socketId === newInviter.socketId)) {
+      if (!inviteList?.some(i => i.inviter.socketId === newInviter.socketId)) {
         const newInvite: Invite = { inviter: newInviter };
         setInviteList(prev => [...prev ?? [], newInvite]);
         console.warn("CONVITE RECEBIDO");
+        console.warn(newInvite, inviteList);
       }
     }
 
@@ -43,9 +44,9 @@ function App() {
               <MainMenu/>
               <MatchRoom/>
               <UserCard/>
-              {inviteList.length > 0 && (
+              {inviteList.length > 0 ?
                 <InviteCard />
-              )}
+              : <div id="VAZIA"></div>}
             </div>
           </InviteContext.Provider>
         </UserContext.Provider>

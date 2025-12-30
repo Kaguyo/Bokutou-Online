@@ -6,13 +6,7 @@ interface InviteContextType {
     setInviteList: Dispatch<SetStateAction<Invite[]>>;
 }
 
-// valor inicial padrão
-const defaultInviteContext: InviteContextType = {
-    inviteList: [],
-    setInviteList: () => {}
-};
-
-export const InviteContext = createContext<InviteContextType>(defaultInviteContext);
+export const InviteContext = createContext<InviteContextType | null>(null)
 
 export function useInvite() {
     const ctx = useContext(InviteContext);
