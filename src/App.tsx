@@ -22,6 +22,7 @@ function App() {
       if (!inviteList.some(i => i.inviter.socketId === newInviter.socketId)) {
         const newInvite: Invite = { inviter: newInviter };
         setInviteList(prev => [...prev ?? [], newInvite]);
+        console.warn("CONVITE RECEBIDO");
       }
     }
 
@@ -30,7 +31,7 @@ function App() {
     return () => {
       socket.off("svr_transfer_invite", handleNewInvite);
     };
-  }, [inviteList, setInviteList]);
+  }, [setInviteList]);
 
   return (
     <>
