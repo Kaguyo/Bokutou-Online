@@ -1,4 +1,4 @@
-import React, { JSX, useContext, useState } from 'react';
+import React, { JSX, useContext, useEffect, useState } from 'react';
 import './MainMenu.css';
 import { SocketContext } from '../contexts/SocketContext';
 import { UserContext } from '../contexts/UserContext';
@@ -6,11 +6,13 @@ import userEnv from '../../env.user.json';
 import { User } from '../models/User';
 import { Player } from '../models/Player';
 
+type MainMenuPages = "DEFAULT" | "VERSUS" | "ARCADE" | "MULTIPLAYER" | "ARCADE SETTINGS"; // Limita os valores settaveis à activeSession
+
 const MainMenu: React.FC = () => {
   const socketCtx = useContext(SocketContext);
   const userCtx = useContext(UserContext);
 
-  const [activeSession, setActiveSession] = useState<"DEFAULT" | "VERSUS" | "ARCADE" | "MULTIPLAYER" | "ARCADE SETTINGS">("DEFAULT")
+  const [activeSession, setActiveSession] = useState<MainMenuPages>("DEFAULT")
   const [optionTeamSize, setOptionTeamSize] = useState<number>(1);
   const [optionDifficultyIndex, setOptionDifficultyIndex] = useState<number>(2);
   
@@ -140,7 +142,32 @@ const MainMenu: React.FC = () => {
     setOptionDifficultyIndex(2);
     setActiveSession("DEFAULT");
   }
- 
+  
+  const backMap: Record<MainMenuPages, MainMenuPages | null> = {
+    "DEFAULT": null,
+    "VERSUS" : "DEFAULT",
+    "ARCADE" : "DEFAULT",
+    "MULTIPLAYER" : "DEFAULT",
+    "ARCADE SETTINGS" : "ARCADE"
+  }
+
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        const previous = backMap[activeSession];
+        if (previous) {
+          setActiveSession(previous);
+        }
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [activeSession]);
+
   const mainMenuSessions: Record<string, JSX.Element> = {
     "DEFAULT": 
     <div className="main-menu">

@@ -18,18 +18,19 @@ function App() {
   const [inviteList, setInviteList] = useState<Invite[]>([]);
 
   useEffect(() => {
-  function handleNewInvite(newInviter: User) {
-    if (!inviteList.some(i => i.inviter.socketId === newInviter.socketId)) {
-      const newInvite: Invite = { inviter: newInviter };
-      setInviteList(prev => [...prev, newInvite]);
+    function handleNewInvite(newInviter: User) {
+      if (!inviteList.some(i => i.inviter.socketId === newInviter.socketId)) {
+        const newInvite: Invite = { inviter: newInviter };
+        setInviteList(prev => [...prev, newInvite]);
+      }
     }
-  }
 
-  socket.on("svr_transfer_invite", handleNewInvite);
+    socket.on("svr_transfer_invite", handleNewInvite);
 
-  return () => {
-    socket.off("svr_transfer_invite", handleNewInvite);
-  };}, [inviteList]);
+    return () => {
+      socket.off("svr_transfer_invite", handleNewInvite);
+    };
+  }, [inviteList]);
 
   useEffect(() => {
     console.log("A lista mudou para:", inviteList);
