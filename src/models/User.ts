@@ -13,4 +13,6 @@ export class User {
         this.level = level;
         this.status = status;
     }
+
+    static pfpImageUrl: string;
 }

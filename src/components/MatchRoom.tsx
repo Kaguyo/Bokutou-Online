@@ -75,7 +75,7 @@ function MatchRoom(): JSX.Element {
                     {
                         Player.globalPlayerList.map((p) => 
                             <div key={p.socketId} className="global-playerlist-item">
-                                <div className="item-profile-container"><img src={"/gohan.gif"} alt="pfp" /></div>
+                                <div className="item-profile-container"><img alt=" " /></div>
                                 <div className="item-nickname-container"><span>{p.nickname}</span></div>
                                 <div className="item-level-container"><span>Lv. {p.level}</span></div>
                                 <div className="item-status-container"><span>{p.status}</span></div>

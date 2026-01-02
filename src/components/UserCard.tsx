@@ -1,17 +1,22 @@
 import { UserContext } from '../contexts/UserContext';
 import { User } from '../models/User';
+import { pickImageAndConvert } from '../utils/indexedDb';
 import './UserCard.css'
 import { JSX, useContext } from 'react';
 
+interface UserCardProps {
+    accountHandle: FileSystemFileHandle | null
+    user: User | null
+}
 
-function UserCard(): JSX.Element {
+function UserCard(props: UserCardProps): JSX.Element {
     const userCtx = useContext(UserContext);
-    
+
     return (
         <div id="profile-template">
             <div id="profile-template-card">
-                <div id="profile-icon">
-                    <img id="img-pfp" src="/gohan.jpg" alt="img"/>
+                <div id="profile-icon" onClick={() => pickImageAndConvert(props.accountHandle, props.user)}>
+                    <img className="user-pfp" alt=" " />
                 </div>  
             </div>
 

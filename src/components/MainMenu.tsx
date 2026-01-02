@@ -1,14 +1,17 @@
-import React, { JSX, useContext, useEffect, useState } from 'react';
+import React, { JSX, useContext, useEffect, useRef, useState } from 'react';
 import './MainMenu.css';
 import { SocketContext } from '../contexts/SocketContext';
 import { UserContext } from '../contexts/UserContext';
-import userEnv from '../../env.user.json';
+import guest from '../../guest.json';
 import { User } from '../models/User';
 import { Player } from '../models/Player';
 
-type MainMenuPages = "DEFAULT" | "VERSUS" | "ARCADE" | "MULTIPLAYER" | "ARCADE SETTINGS"; // Limita os valores settaveis à activeSession
+type MainMenuPages = "DEFAULT" | "VERSUS" | "ARCADE" |
+                     "MULTIPLAYER" | "ARCADE SETTINGS" | "MY ACCOUNT"; // Stricts values that can be setted to activeSession useState
 
 const MainMenu: React.FC = () => {
+  const fileInputRef = useRef<HTMLInputElement>(null); // References the file input element in my account page
+  
   const socketCtx = useContext(SocketContext);
   const userCtx = useContext(UserContext);
 
@@ -23,13 +26,13 @@ const MainMenu: React.FC = () => {
     4: "INFERNAL"
   }
 
-  function feedHostRoom(user: User): void {
+  async function feedHostRoom(user: User): Promise<void> {
     if (user.hosting)
       return;
 
     user.hosting = true;
     user.activeSession = true;
-
+  
     const roomWrapper = document.getElementById("multiplayer-room-wrapper");
     if (roomWrapper) {
       roomWrapper.style.visibility = "visible"
@@ -54,10 +57,8 @@ const MainMenu: React.FC = () => {
       
       profilePictureContainer.className = "profile-picture-container";
       const profilePicture = document.createElement('img');
-      profilePicture.src = "/gohan.jpg";
-      profilePicture.alt = "IMG";
-      profilePicture.className = "profile-picture";
-      
+      profilePicture.className = "user-pfp";
+      profilePicture.src = User.pfpImageUrl;
       const playerNameContainer = document.createElement('div');
       playerNameContainer.className = "player-name-container";
 
@@ -101,7 +102,7 @@ const MainMenu: React.FC = () => {
 
       if (socketCtx?.connected) {
         if (!userCtx?.me) {
-          user = new User(socketCtx.id!, userEnv.nickname, userEnv.level, "Online");
+          user = new User(socketCtx.id!, guest.nickname, guest.level, "Online");
           if (user) {
             userCtx?.setMe(user);
             feedHostRoom(user); 
@@ -142,13 +143,30 @@ const MainMenu: React.FC = () => {
     setOptionDifficultyIndex(2);
     setActiveSession("DEFAULT");
   }
-  
+
+  async function handleFileChange (e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+
+    if (!file) return;
+
+    const bytes = new Uint8Array(await file.arrayBuffer());
+
+    const imageUrl = "";
+    if (imageUrl) {
+      const img = document.getElementById("previewImg") as HTMLImageElement;
+      if (img) img.src = imageUrl;
+      const imgReduced = document.getElementById("previewImgReduced") as HTMLImageElement;
+      if (imgReduced) imgReduced.src = imageUrl;
+    }
+  };
+
   const backMap: Record<MainMenuPages, MainMenuPages | null> = {
     "DEFAULT": null,
     "VERSUS" : "DEFAULT",
     "ARCADE" : "DEFAULT",
     "MULTIPLAYER" : "DEFAULT",
-    "ARCADE SETTINGS" : "ARCADE"
+    "ARCADE SETTINGS" : "ARCADE",
+    "MY ACCOUNT" : "DEFAULT"
   }
 
   useEffect(() => {
@@ -174,10 +192,8 @@ const MainMenu: React.FC = () => {
       <ul id="menu-list" className="no-dots">
         <li className="menu-item" onClick={() => {setActiveSession("ARCADE")}}>ARCADE</li>
         <li className="menu-item" onClick={() => {setActiveSession("VERSUS")}}>VERSUS</li>
-        <li className="menu-item" onClick={handleSelectOnline}>
-          ONLINE
-        </li>
-        <li className="menu-item">MY ACCOUNT</li>
+        <li className="menu-item" onClick={handleSelectOnline}>ONLINE</li>
+        <li className="menu-item" onClick={() => {setActiveSession("MY ACCOUNT")}}>MY ACCOUNT</li>
       </ul>
     </div>,
     "VERSUS": 
@@ -185,41 +201,24 @@ const MainMenu: React.FC = () => {
       <ul id="menu-list" className="no-dots">
         <li className="menu-item" onClick={() => {setActiveSession("ARCADE")}}>ARCADE</li>
         <li className="menu-item" onClick={() => {setActiveSession("VERSUS")}}>VERSUS</li>
-        <li className="menu-item" onClick={handleSelectOnline}>
-          ONLINE
-        </li>
-        <li className="menu-item">MY ACCOUNT</li>
+        <li className="menu-item" onClick={handleSelectOnline}>ONLINE</li>
+        <li className="menu-item" >MY ACCOUNT</li>
       </ul>
     </div>,
     "ARCADE":
     <div className="main-menu">
       <ul id="menu-list" className="no-dots">
-
-        <li className="menu-item" onClick={() => {}}>
-          START
-        </li>
-
-        <li className="menu-item" onClick={() => {setActiveSession("ARCADE SETTINGS")}}>
-          SETTINGS
-        </li>
-        
-        <li className="menu-item" onClick={handleMainMenuButton}>
-          MAIN MENU
-        </li>
+        <li className="menu-item" onClick={() => {}}>START</li>
+        <li className="menu-item" onClick={() => {setActiveSession("ARCADE SETTINGS")}}>SETTINGS</li>
+        <li className="menu-item" onClick={handleMainMenuButton}>MAIN MENU</li>
       </ul>
     </div>,
     "MULTIPLAYER":
     <div className="main-menu">
       <ul id="menu-list" className="no-dots">
         <li className="menu-item" onClick={() => {}}>ARCADE COOP</li>
-        
-        <li className="menu-item" onClick={() => {}}>
-          PLAYER VS PLAYER
-        </li>
-
-        <li className="menu-item" onClick={handleSelectOnline}>
-          PLAYERS VS CPU
-        </li>
+        <li className="menu-item" onClick={() => {}}>PLAYER VS PLAYER</li>
+        <li className="menu-item" onClick={handleSelectOnline}>PLAYERS VS CPU</li>
         <li className="menu-item" onClick={handleMainMenuButton}>MAIN MENU</li>
       </ul>
     </div>,
@@ -241,7 +240,14 @@ const MainMenu: React.FC = () => {
         <li className="menu-item" onClick={() => {setActiveSession("ARCADE")}}>
           BACK
         </li>
-
+      </ul>
+    </div>,
+    "MY ACCOUNT":
+    <div className="main-menu">
+      <ul id="menu-list" className="no-dots">
+        <li className="menu-item" onClick={() => {}}>CHANGE NICKNAME</li>
+        <li className="menu-item" onClick={() => fileInputRef.current?.click()}>CHANGE PROFILE PICTURE <input onChange={(e) => handleFileChange(e)} ref={fileInputRef} type="file" style={{display: 'none'}}/></li>
+        <li className="menu-item" onClick={handleMainMenuButton}>MAIN MENU</li>
       </ul>
     </div>
   };
