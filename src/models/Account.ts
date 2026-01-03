@@ -1,11 +1,13 @@
 export default class Account {
     id: string;
-    name: string;
+    nickname: string;
     profilePicture: string;
+    level: number;
 
-    constructor(id: string, name: string, profilePictureToBase64: string) {
+    constructor(id: string, nickname: string, level: number, profilePictureToBase64: string) {
         this.id = id;
-        this.name = name;
+        this.nickname = nickname;
+        this.level = level;
         this.profilePicture = profilePictureToBase64;
     }
 }

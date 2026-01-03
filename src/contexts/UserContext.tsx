@@ -4,6 +4,8 @@ import { User } from "../models/User";
 interface UserContextType {
   me: User | null;
   setMe: Dispatch<SetStateAction<User | null>>;
+  profilePicUrl: string | null;
+  setProfilePicUrl: Dispatch<SetStateAction<string | null>>;
 }
 
 export const UserContext = createContext<UserContextType | null>(null);

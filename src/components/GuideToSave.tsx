@@ -1,6 +1,6 @@
 import { Dispatch, JSX, SetStateAction, useEffect, useRef } from 'react';
 import './GuideToSave.css'
-import { verifyAccountPermission } from '../utils/indexedDb';
+import { verifyAccountPermission } from '../utils/saveData';
 
 interface GuideToSaveProps {
     isActive: boolean;

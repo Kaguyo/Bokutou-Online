@@ -2,9 +2,9 @@ import React, { JSX, useContext, useEffect, useRef, useState } from 'react';
 import './MainMenu.css';
 import { SocketContext } from '../contexts/SocketContext';
 import { UserContext } from '../contexts/UserContext';
-import guest from '../../guest.json';
 import { User } from '../models/User';
 import { Player } from '../models/Player';
+import { socket } from '../api/socket';
 
 type MainMenuPages = "DEFAULT" | "VERSUS" | "ARCADE" |
                      "MULTIPLAYER" | "ARCADE SETTINGS" | "MY ACCOUNT"; // Stricts values that can be setted to activeSession useState
@@ -58,7 +58,7 @@ const MainMenu: React.FC = () => {
       profilePictureContainer.className = "profile-picture-container";
       const profilePicture = document.createElement('img');
       profilePicture.className = "user-pfp";
-      profilePicture.src = User.pfpImageUrl;
+      profilePicture.src = userCtx?.profilePicUrl || " ";
       const playerNameContainer = document.createElement('div');
       playerNameContainer.className = "player-name-container";
 
@@ -71,7 +71,7 @@ const MainMenu: React.FC = () => {
       
       const playerLevel = document.createElement('p');
       playerLevel.className = "player-level"
-      playerLevel.textContent = "Lv. "+user.level!.toString();
+      playerLevel.textContent = "Lv. " + (user.level.toString());
 
       profilePictureContainer.appendChild(profilePicture);
       playerNameContainer.appendChild(playerName);
@@ -84,8 +84,6 @@ const MainMenu: React.FC = () => {
   }
 
   async function handleSelectOnline(): Promise<void> {
-    let user: User;
-
     socketCtx?.connect();
 
     const connectionPromise = new Promise<void>((resolve) => {
@@ -99,24 +97,20 @@ const MainMenu: React.FC = () => {
 
     try {
       await Promise.race([connectionPromise, timeoutPromise]);
-
-      if (socketCtx?.connected) {
-        if (!userCtx?.me) {
-          user = new User(socketCtx.id!, guest.nickname, guest.level, "Online");
-          if (user) {
-            userCtx?.setMe(user);
-            feedHostRoom(user); 
-          }
-
-          socketCtx.emit('clt_sending_player', user);
-        }
+      if (socketCtx?.connected && userCtx?.me) {
+        const updatedMe = { ...userCtx.me, socketId: socket.id, status: "Online" };
+        userCtx.setMe(updatedMe as User);
+        feedHostRoom(updatedMe as User);
       
+        socketCtx.emit('clt_sending_player', updatedMe);
+    
         socketCtx.on('svr_global_connected_players', (playerList: Player[]) => {
-          const filteredArray = playerList.filter(p => p.socketId != user.socketId);
+          console.log(userCtx?.me?.socketId)
+          const filteredArray = playerList.filter(p => p.socketId != updatedMe.socketId);
           Player.globalPlayerList = filteredArray;
           console.warn(Player.globalPlayerList);
         });
-        
+      
         setActiveSession("MULTIPLAYER");
       }
     } catch (error) {
@@ -143,22 +137,6 @@ const MainMenu: React.FC = () => {
     setOptionDifficultyIndex(2);
     setActiveSession("DEFAULT");
   }
-
-  async function handleFileChange (e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-
-    if (!file) return;
-
-    const bytes = new Uint8Array(await file.arrayBuffer());
-
-    const imageUrl = "";
-    if (imageUrl) {
-      const img = document.getElementById("previewImg") as HTMLImageElement;
-      if (img) img.src = imageUrl;
-      const imgReduced = document.getElementById("previewImgReduced") as HTMLImageElement;
-      if (imgReduced) imgReduced.src = imageUrl;
-    }
-  };
 
   const backMap: Record<MainMenuPages, MainMenuPages | null> = {
     "DEFAULT": null,
@@ -246,7 +224,9 @@ const MainMenu: React.FC = () => {
     <div className="main-menu">
       <ul id="menu-list" className="no-dots">
         <li className="menu-item" onClick={() => {}}>CHANGE NICKNAME</li>
-        <li className="menu-item" onClick={() => fileInputRef.current?.click()}>CHANGE PROFILE PICTURE <input onChange={(e) => handleFileChange(e)} ref={fileInputRef} type="file" style={{display: 'none'}}/></li>
+        <li className="menu-item" onClick={() => fileInputRef.current?.click()}>CHANGE PROFILE PICTURE 
+          <input  ref={fileInputRef} type="file" style={{display: 'none'}}/>
+        </li>
         <li className="menu-item" onClick={handleMainMenuButton}>MAIN MENU</li>
       </ul>
     </div>
