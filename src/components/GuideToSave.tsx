@@ -1,4 +1,4 @@
-import { Dispatch, JSX, SetStateAction, useEffect, useRef } from 'react';
+import { Dispatch, JSX, SetStateAction, useEffect, useRef, useState } from 'react';
 import './GuideToSave.css'
 import { verifyAccountPermission } from '../utils/saveData';
 
@@ -6,12 +6,16 @@ interface GuideToSaveProps {
     isActive: boolean;
     setIsActive: Dispatch<SetStateAction<boolean>>;
     accountHandle: FileSystemFileHandle | null;
-    handleSelectAccount(): Promise<void>;
+    handleSelectAccount(
+        setIsLoading: Dispatch<SetStateAction<boolean>> | null,
+        setLoadingOperation: Dispatch<SetStateAction<string | null>> | null
+    ): Promise<void>;
 }
 
 function GuideToSave({ isActive, setIsActive, accountHandle, handleSelectAccount }: GuideToSaveProps): JSX.Element {
     const containerRef = useRef<HTMLDivElement>(null);
-
+    const [isLoading, setIsLoading] = useState(false);
+    const [loadingOperation, setLoadingOperation] = useState<string | null>(null);
     useEffect(() => {
         const container = containerRef.current;
         if (!container) return;
@@ -27,6 +31,15 @@ function GuideToSave({ isActive, setIsActive, accountHandle, handleSelectAccount
         }
     }, [accountHandle, isActive]);
 
+    async function handleSelectAccountGuide() {
+        try {
+            await handleSelectAccount(setIsLoading, setLoadingOperation);
+        } catch (err) {
+            setIsLoading(false);
+            setLoadingOperation(null);
+        }
+    }
+
     async function handlePermissionToSave(allow: boolean) {
         if (!allow) {
             containerRef.current?.classList.add("sleep");
@@ -35,6 +48,7 @@ function GuideToSave({ isActive, setIsActive, accountHandle, handleSelectAccount
 
         if (accountHandle) {
             try {
+                setIsLoading(true);
                 const permission = await verifyAccountPermission(accountHandle);
                 
                 if (permission) {
@@ -42,6 +56,8 @@ function GuideToSave({ isActive, setIsActive, accountHandle, handleSelectAccount
                 } else {
                     alert("A permissão foi negada pelo navegador.");
                 }
+
+                setIsLoading(false);
             } catch (error) {
                 console.error("Erro na permissão:", error);
             }
@@ -52,14 +68,20 @@ function GuideToSave({ isActive, setIsActive, accountHandle, handleSelectAccount
         <div id="guide-to-save-progress" ref={containerRef}>
             {!accountHandle ? (
                 <div className="alert-bar">
-                    <span id="handle-span">
-                        Save não detectado. informe o arquivo: <strong>account.save.json</strong>
-                        <br />ou seu progresso não poderá ser mantido.
-                    </span>
-                    <button onClick={handleSelectAccount}>Selecionar arquivo</button>
-                    <button id="laterBtn" onClick={() => containerRef.current?.classList.add("sleep")}>
-                        Mais tarde
-                    </button>
+                    {
+                        isLoading ? <span id="permission-span">{loadingOperation}</span>
+                        :
+                        <>
+                        <span id="handle-span">
+                            Save não detectado. informe o arquivo: <strong>account.save.json</strong>
+                            <br />ou seu progresso não poderá ser mantido.
+                        </span>
+                        <button onClick={handleSelectAccountGuide}>Selecionar arquivo</button>
+                        <button id="laterBtn" onClick={() => containerRef.current?.classList.add("sleep")}>
+                            Mais tarde
+                        </button> 
+                        </>
+                    }
                 </div>
             ) : !isActive ? (
                 <div className="alert-bar">

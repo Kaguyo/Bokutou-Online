@@ -1,7 +1,7 @@
 import { Dispatch, SetStateAction, useContext } from "react";
 import Account from "../models/Account";
 import { User } from "../models/User";
-import { UserContext } from "../contexts/UserContext";
+import { getStoredAccountHandle, saveAccountToIndexedDB } from "./indexedDb";
 
 export async function updateAccountFile(handle: FileSystemFileHandle, data: Account): Promise<boolean> {
   try {
@@ -49,11 +49,9 @@ export async function loadGame(handle: FileSystemFileHandle): Promise<Account | 
 export async function pickImageAndConvert(
   me: User,
   accountHandle: FileSystemFileHandle | null,
-  loggedAccount: Account | null,
-  profilePicUrl: string | null,
   setProfilePicUrl: Dispatch<SetStateAction<string | null>>,
-  setLoggedAccount: Dispatch<SetStateAction<Account | null>>): Promise<void> {
-
+  setLoggedAccount: Dispatch<SetStateAction<Account | null>>): Promise<boolean> {
+  
   const [handle] = await (window as any).showOpenFilePicker({
     types: [
       {
@@ -76,6 +74,9 @@ export async function pickImageAndConvert(
       const base64Only = dataUrl.split(",")[1];
       resolve(base64Only);
     };
+    reader.onloadend = () => {
+      setProfilePicUrl(reader.result as string);
+    };
     reader.readAsDataURL(file);
   });
 
@@ -83,12 +84,19 @@ export async function pickImageAndConvert(
 
   if (accountHandle) {
     let success = await updateAccountFile(accountHandle, updateAccountObject);
-    if (!success) return;
+    if (!success) return false;
+    
+    try {
+      await saveAccountToIndexedDB(accountHandle);
+    } catch (indexedDbErr) {
+      console.error("Failure to save account to IndexedDB.", indexedDbErr);
+      return false;
+    }
+
     setLoggedAccount(updateAccountObject);
-    if (loggedAccount)
-      me.updateProfilePicture(profilePicUrl, loggedAccount, setProfilePicUrl)    
   }
   
+  return true;
 }
 
 // Função para seleção e retorno de handle para um arquivo de progresso de uma conta.

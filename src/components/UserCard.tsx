@@ -1,8 +1,9 @@
 import { UserContext } from '../contexts/UserContext';
 import Account from '../models/Account';
+import { User } from '../models/User';
 import { pickImageAndConvert } from '../utils/saveData';
 import './UserCard.css'
-import { Dispatch, JSX, SetStateAction, useContext, useEffect } from 'react';
+import { Dispatch, JSX, SetStateAction, useContext, useEffect, useState } from 'react';
 
 interface UserCardProps {
     accountHandle: FileSystemFileHandle | null;
@@ -10,26 +11,50 @@ interface UserCardProps {
     profilePicUrl: string | null;
     setProfilePicUrl: Dispatch<SetStateAction<string | null>>;
     setLoggedAccount: Dispatch<SetStateAction<Account | null>>;
+    setIsSynced: Dispatch<SetStateAction<boolean>>;
 }
 
 function UserCard(props: UserCardProps): JSX.Element {
     const userCtx = useContext(UserContext);
 
+    const handleImageSelect = async () => {
+        try {
+            let success = await pickImageAndConvert(
+                userCtx?.me!, props.accountHandle,
+                props.setProfilePicUrl, props.setLoggedAccount
+            );
+
+            if (!success) {
+                props.setIsSynced(false);
+                return;
+            }
+
+            if (props.loggedAccount){
+                props.setIsSynced(true);
+            }
+        } catch (error) {
+
+        }
+    };
+
     useEffect(() => {
         let userPfpElements = document.getElementsByClassName('user-pfp');
         Array.from(userPfpElements).forEach((img) => {
-        console.log(img);
         if (img instanceof HTMLImageElement) {
             img.src = userCtx?.profilePicUrl!;
-            console.log(img);
         }
         });
     }, [userCtx?.profilePicUrl]);
+    
     return (
         <div id="profile-template">
             <div id="profile-template-card">
-                <div id="profile-icon" onClick={() => pickImageAndConvert(userCtx?.me!, props.accountHandle, props.loggedAccount, props.profilePicUrl, props.setProfilePicUrl, props.setLoggedAccount)}>
-                    <img className="user-pfp" alt=" " src={userCtx?.profilePicUrl || " "} />
+                <div id="profile-icon" onClick={handleImageSelect}>
+                    <div className="user-pfp-placeholder" />
+                    <img 
+                        src={userCtx?.profilePicUrl || " "} 
+                        className="user-pfp" 
+                    />
                 </div>  
             </div>
 

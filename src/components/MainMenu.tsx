@@ -54,11 +54,12 @@ const MainMenu: React.FC = () => {
       roomItem.style.width = "100%";
       
       const profilePictureContainer = document.createElement('div');
-      
       profilePictureContainer.className = "profile-picture-container";
+
       const profilePicture = document.createElement('img');
       profilePicture.className = "user-pfp";
-      profilePicture.src = userCtx?.profilePicUrl || " ";
+      profilePicture.src = `${userCtx?.profilePicUrl}` || " ";
+
       const playerNameContainer = document.createElement('div');
       playerNameContainer.className = "player-name-container";
 

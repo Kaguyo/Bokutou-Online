@@ -51,12 +51,14 @@ export async function getStoredAccountHandle(): Promise<FileSystemFileHandle | n
         }
       }
       
-      const tx = db.transaction("storage", "readonly");
-      const store = tx.objectStore("storage");
-      const request = store.get(FILE_HANDLE_KEY);
-      request.onsuccess = () => resolve(request.result || null);
-      request.onerror = () => {
-        throw Error("Failed to get handle from IndexedDB.")
+      if (db.objectStoreNames.contains(storeName)) {
+        const tx = db.transaction("storage", "readonly");
+        const store = tx.objectStore("storage");
+        const request = store.get(FILE_HANDLE_KEY);
+        request.onsuccess = () => resolve(request.result || null);
+        request.onerror = () => {
+          throw Error("Failed to get handle from IndexedDB.");
+        }
       }
     };
     openRequest.onerror = () => resolve(null);

@@ -17,8 +17,8 @@ export class User {
         this.status = status;
     }
 
-    updateProfilePicture(profilePicUrl: string | null, loggedAccount: Account, setProfilePicUrl: Dispatch<SetStateAction<string | null>>){
-        if (loggedAccount.profilePicture) {
+    static updateProfilePicture(profilePicUrl: string | null, loggedAccount: Account | null, setProfilePicUrl: Dispatch<SetStateAction<string | null>>){
+        if (loggedAccount?.profilePicture) {
 
           // Revoke previous URL (if any)
           if (profilePicUrl) {
