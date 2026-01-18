@@ -18,14 +18,14 @@ export class User {
     }
 
     static updateProfilePicture(profilePicUrl: string | null, loggedAccount: Account | null, setProfilePicUrl: Dispatch<SetStateAction<string | null>>){
-        if (loggedAccount?.profilePicture) {
+        if (loggedAccount?.player64) {
 
           // Revoke previous URL (if any)
           if (profilePicUrl) {
             URL.revokeObjectURL(profilePicUrl); // release old one
           }
 
-          const base64Data = loggedAccount.profilePicture.split(",")[1] ?? loggedAccount.profilePicture;
+          const base64Data = loggedAccount.player64.split(",")[1] ?? loggedAccount.player64;
           const binary = atob(base64Data);
           const array = new Uint8Array(binary.length);
           for (let i = 0; i < binary.length; i++) {

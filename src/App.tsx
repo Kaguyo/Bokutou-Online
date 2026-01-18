@@ -89,7 +89,7 @@ function App() {
         setIsActive(true);
         const loadAccount = await loadGame(handle);
         if (!loadAccount) { // login guest caso não tenha progresso salvo.
-          const guestAccount = new Account(guest.id.toString(), guest.nickname, guest.level, guest.profilePictureBase64);
+          const guestAccount = new Account(guest.id.toString(), guest.nickname, guest.level, guest.player64Base64);
           const newMe = new User(socket.id, guest.nickname, guest.level, guest.status);
           setLoggedAccount(guestAccount);
           setMe(newMe);

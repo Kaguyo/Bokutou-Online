@@ -1,6 +1,7 @@
 {
   "name": "server",
   "version": "1.0.0",
+  "type": "module",
   "main": "dist/main.js",
   "scripts": {
     "build": "tsc",
@@ -15,11 +16,15 @@
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^5.2.1",
+    "mongoose": "^9.1.4",
+    "multer": "^2.0.2",
+    "sharp": "^0.34.5",
     "socket.io": "^4.8.1"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
+    "@types/multer": "^2.0.0",
     "@types/node": "^25.0.1",
     "typescript": "^5.0.0"
   }

@@ -53,12 +53,12 @@ const MainMenu: React.FC = () => {
       roomItem.className = "multiplayer-room-item";
       roomItem.style.width = "100%";
       
-      const profilePictureContainer = document.createElement('div');
-      profilePictureContainer.className = "profile-picture-container";
+      const player64Container = document.createElement('div');
+      player64Container.className = "profile-picture-container";
 
-      const profilePicture = document.createElement('img');
-      profilePicture.className = "user-pfp";
-      profilePicture.src = `${userCtx?.profilePicUrl}` || " ";
+      const player64 = document.createElement('img');
+      player64.className = "user-pfp";
+      player64.src = `${userCtx?.profilePicUrl}` || " ";
 
       const playerNameContainer = document.createElement('div');
       playerNameContainer.className = "player-name-container";
@@ -74,10 +74,10 @@ const MainMenu: React.FC = () => {
       playerLevel.className = "player-level"
       playerLevel.textContent = "Lv. " + (user.level.toString());
 
-      profilePictureContainer.appendChild(profilePicture);
+      player64Container.appendChild(player64);
       playerNameContainer.appendChild(playerName);
       playerLevelContainer.appendChild(playerLevel);
-      roomItem.appendChild(profilePictureContainer);
+      roomItem.appendChild(player64Container);
       roomItem.appendChild(playerNameContainer);
       roomItem.appendChild(playerLevelContainer);
       roomBox.appendChild(roomItem);

@@ -1,6 +1,6 @@
 import { Server, Socket } from "socket.io";
 // No need to import Listener here
-import Player from "../application/player.js";
+import Player from "../../../domain/entities/player.js";
 
 // Define the shape of the data that will actually be sent to the client
 interface PlayerData {

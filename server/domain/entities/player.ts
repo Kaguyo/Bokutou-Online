@@ -1,9 +1,8 @@
 import { Socket } from "socket.io";
-import { User } from "./user";
 
 interface MatchRoom {
     sessionLocked: boolean;
-    connectedPlayers: User[];
+    connectedPlayers: Player[] | null;
 }
 
 export default class Player {
@@ -12,6 +11,7 @@ export default class Player {
     socket: Socket; 
     level: number;
     status: string;
+    player64: string | null = null;
 
     host: boolean = false;
 
@@ -20,6 +20,11 @@ export default class Player {
     matchRoom: MatchRoom = {
         sessionLocked: true,
         connectedPlayers: []
+    }
+
+    setHost(isHost: boolean, connectedPlayers: Player[]) {
+        this.host = isHost;
+        this.matchRoom.connectedPlayers = connectedPlayers;
     }
 
     constructor(id: string, nickname: string, level: number, status: string, socket: Socket) {

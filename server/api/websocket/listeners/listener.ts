@@ -1,6 +1,5 @@
 import { Server, Socket } from "socket.io";
-import Subscriber from "./subscriber.js";
-import Player from "../application/player.js";
+import Player from "../../../domain/entities/player.js";
 
 export default class Listener {
   static receiveConnection(player: Player, socket: Socket) {

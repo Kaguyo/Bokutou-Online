@@ -35,7 +35,7 @@ export async function loadGame(handle: FileSystemFileHandle): Promise<Account | 
         return;
       }
 
-      const result = new Account(loadedGame.id, loadedGame.nickname, loadedGame.level, loadedGame.profilePicture);
+      const result = new Account(loadedGame.id, loadedGame.nickname, loadedGame.level, loadedGame.player64);
       console.log("Game Loaded");
       return result;
 
@@ -84,6 +84,7 @@ export async function pickImageAndConvert(
 
   if (accountHandle) {
     let success = await updateAccountFile(accountHandle, updateAccountObject);
+    
     if (!success) return false;
     
     try {
