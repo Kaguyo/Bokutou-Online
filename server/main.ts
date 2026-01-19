@@ -1,9 +1,9 @@
 import express from "express";
 import http from "http";
-import setupPlayerRoutes from "./api/rest/builder/player.js";
-import PlayerRepository from "./infrastructure/repositories/mongodb/player.repository.js";
-import PlayerService from "./application/services/player.service.js";
-import PlayerController from "./api/rest/controllers/player.controller.js";
+import setupAccountRoutes from "./api/rest/builder/account.js";
+import AccountRepository from "./infrastructure/repositories/mongodb/account.repository.js";
+import AccountService from "./application/services/account.service.js";
+import AccountController from "./api/rest/controllers/account.controller.js";
 import initWebSocketServer from "./api/websocket/server.js";
 import Database from "./infrastructure/repositories/mongodb/connection.js";
 
@@ -11,11 +11,11 @@ const app = express();
 
 const db = new Database();
 await db.connect();
-const playerRepo = new PlayerRepository(db.getConnection());
-const playerService = new PlayerService(playerRepo);
-const playerController = new PlayerController(playerService);
+const accountRepo = new AccountRepository(db.getConnection());
+const accountService = new AccountService(accountRepo);
+const accountController = new AccountController(accountService);
 
-setupPlayerRoutes(app, playerController);
+setupAccountRoutes(app, accountController);
 
 const server = http.createServer(app);
 

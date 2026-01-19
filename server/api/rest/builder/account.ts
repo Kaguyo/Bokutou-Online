@@ -1,12 +1,11 @@
 import { Express, Request, Response } from "express";
-import PlayerController from "../controllers/player.controller.js";
-import { validatePlayerSchema } from "../schemas/playerSchema.js";
 import Player from "../../../domain/entities/player.js";
 import multer from "multer";
 import path from "path";
 import fs from "fs/promises";
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import AccountController from "../controllers/account.controller.js";
 
 // Fix for __dirname in ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -38,12 +37,12 @@ const upload = multer({
   }
 });
 
-export default function setupPlayerRoutes(app: Express, playerController: PlayerController): void {
-    app.get('/players/:id', async (req: Request, res: Response) => {
+export default function setupAccountRoutes(app: Express, accountController: AccountController): void {
+    app.get('/accounts/:id', async (req: Request, res: Response) => {
         try {
             const playerId = req.params.id;
             
-            const player = await playerController.getPlayerById(playerId as string);
+            const player = await accountController.getPlayerByAccountId(playerId as string);
             if (!player) {
                 return res.status(404).json({ message: "Player not found" });
             }
@@ -58,14 +57,15 @@ export default function setupPlayerRoutes(app: Express, playerController: Player
         }
     });
 
-    app.post('/players', upload.single('avatar'), async (req: Request, res: Response) => {
+    app.post('/accounts', upload.single('avatar'), async (req: Request, res: Response) => {
         try {
+            console.log("Received POST/request with:", req.body)
             const playerData = req.body;
-            const isValid = validatePlayerSchema(playerData);
+            //const isValid = validatePlayerSchema(playerData);
 
-            if (!isValid) {
-                return res.status(400).json({ message: "Invalid player data" });
-            }
+            // if (!isValid) {
+            //     return res.status(400).json({ message: "Invalid player data" });
+            // }
 
             // Check if player is online
             const onlinePlayer = Player.globalPlayerList.find(p => p.id === playerData.id);
@@ -80,7 +80,7 @@ export default function setupPlayerRoutes(app: Express, playerController: Player
                     console.error('Failed to delete uploaded file:', err)
                 );
             }
-            const result = await playerController.upsertPlayer(playerData);
+            const result = await accountController.upsertAccount(playerData);
             
             res.status(200).json(result);
 
@@ -94,11 +94,11 @@ export default function setupPlayerRoutes(app: Express, playerController: Player
                 return res.status(400).json({ message: `Upload error: ${error.message}` });
             }
             
-            res.status(400).json({ message: "Invalid player data: " + error });
+            res.status(400).json({ message: "Invalid player data" });
         }
     });
 
-    app.get('/players/:id/avatar', async (req: Request, res: Response) => {
+    app.get('/accounts/:id/avatar', async (req: Request, res: Response) => {
         try {
             const playerId = req.params.id;
             const uploadDir = path.join(__dirname, '../uploads/avatars');

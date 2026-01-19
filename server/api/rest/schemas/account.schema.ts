@@ -1,6 +1,5 @@
 function validatePlayerSchema(player: any): boolean {
     if (typeof player !== 'object' || player === null) return false;
-    if (typeof player.id !== 'string') return false;
     return true;
 }
 

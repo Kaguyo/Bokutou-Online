@@ -31,7 +31,7 @@ export default function initWebSocketServer(server: import("http").Server  | imp
         socket.on('clt_sending_player', (playerData: ClientPlayerInput) => {
             const p = new Player(
             playerData.id, playerData.nickname, playerData.level,
-            playerData.status, playerData.avatar64, socket
+            playerData.status, socket
             )
             Listener.receiveConnection(p, socket);
             Subscriber.answerConnection(socket, io); 
