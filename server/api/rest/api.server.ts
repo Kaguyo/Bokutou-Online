@@ -1,11 +1,11 @@
 import { Express, Request, Response } from "express";
-import Player from "../../../domain/entities/player.js";
+import Player from "../../domain/entities/player.js";
 import multer from "multer";
 import path from "path";
 import fs from "fs/promises";
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-import AccountController from "../controllers/account.controller.js";
+import AccountController from "./controllers/account.controller.js";
 
 // Fix for __dirname in ES modules
 const __filename = fileURLToPath(import.meta.url);

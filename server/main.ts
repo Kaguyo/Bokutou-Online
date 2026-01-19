@@ -1,6 +1,6 @@
 import express from "express";
 import http from "http";
-import setupAccountRoutes from "./api/rest/builder/account.js";
+import setupAccountRoutes from "./api/rest/api.server.js";
 import AccountRepository from "./infrastructure/repositories/mongodb/account.repository.js";
 import AccountService from "./application/services/account.service.js";
 import AccountController from "./api/rest/controllers/account.controller.js";
