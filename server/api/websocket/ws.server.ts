@@ -21,7 +21,7 @@ interface ClientPlayerInput {
   avatar64: string;
 }
 
-export default function initWebSocketServer(server: import("http").Server  | import("https").Server) {
+export default function setupWebSocketServer(server: import("http").Server  | import("https").Server) {
     const io = new IOServer<ClientToServerEvents, ServerToClientEvents>(server, {
         cors: { origin: '*' }
     });

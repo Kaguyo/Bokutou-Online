@@ -24,6 +24,7 @@ function UserCard(props: UserCardProps): JSX.Element {
                 props.setProfilePicUrl, props.setLoggedAccount
             );
 
+            
             if (!success) {
                 props.setIsSynced(false);
                 return;

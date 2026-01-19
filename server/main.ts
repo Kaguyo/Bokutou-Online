@@ -4,7 +4,7 @@ import setupAccountRoutes from "./api/rest/api.server.js";
 import AccountRepository from "./infrastructure/repositories/mongodb/account.repository.js";
 import AccountService from "./application/services/account.service.js";
 import AccountController from "./api/rest/controllers/account.controller.js";
-import initWebSocketServer from "./api/websocket/server.js";
+import setupWebSocketServer from "./api/websocket/ws.server.js";
 import Database from "./infrastructure/repositories/mongodb/connection.js";
 
 const app = express();
@@ -19,7 +19,7 @@ setupAccountRoutes(app, accountController);
 
 const server = http.createServer(app);
 
-initWebSocketServer(server);
+setupWebSocketServer(server);
 
 // --- Server Listener ---
 const PORT = 4000;
