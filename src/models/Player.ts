@@ -10,7 +10,7 @@ export class Player {
     nickname: string;
     level: number;
     status: string;
-    player64: Uint8Array | "" = "";
+    avatar64: string = "";
     
     host: boolean = false;
 

@@ -1,5 +1,5 @@
 import Player from "../../domain/entities/player.js";
-import PlayerRepository from "../../infrastructure/repositories/mongodb/player.js";
+import PlayerRepository from "../../infrastructure/repositories/mongodb/player.repository.js";
 
 export default class PlayerService {
   private _playerRepository: PlayerRepository;
@@ -13,7 +13,7 @@ export default class PlayerService {
     return player;
   }
 
-  async upsertPlayer(player: Player): Promise<Error | null> {
+  async upsertPlayer(player: Player): Promise<{ message: string, player: Player | null}> {
     return this._playerRepository.upsertPlayer(player);
   }
 }

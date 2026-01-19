@@ -33,7 +33,7 @@ function UserCard(props: UserCardProps): JSX.Element {
                 props.setIsSynced(true);
             }
         } catch (error) {
-
+            throw Error("Failed to pick and convert image.");
         }
     };
 

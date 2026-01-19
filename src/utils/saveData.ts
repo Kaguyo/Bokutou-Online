@@ -2,6 +2,7 @@ import { Dispatch, SetStateAction, useContext } from "react";
 import Account from "../models/Account";
 import { User } from "../models/User";
 import { getStoredAccountHandle, saveAccountToIndexedDB } from "./indexedDb";
+import { accountService } from "../api/services/account.service";
 
 export async function updateAccountFile(handle: FileSystemFileHandle, data: Account): Promise<boolean> {
   try {
@@ -96,6 +97,13 @@ export async function pickImageAndConvert(
 
     setLoggedAccount(updateAccountObject);
   }
+
+  try {
+    await accountService.upsertAccount(file, updateAccountObject);
+    console.info("Account uploaded to server successfully.");
+  } catch (error) {
+    console.warn("Account upload to server failed.", error);
+  }
   
   return true;
 }
@@ -113,3 +121,4 @@ export async function pickMyAccountFile(): Promise<FileSystemFileHandle> {
 
   return handle;
 }
+

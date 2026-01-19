@@ -29,7 +29,6 @@ function App() {
     setIsLoading: Dispatch<SetStateAction<boolean>> | null = null,
     setLoadingState: Dispatch<SetStateAction<string | null>> | null = null
   ): Promise<void>{
-    
     const handle = await pickMyAccountFile();
     if (!handle) return;
     if (handle.name != "account.save.json") throw Error("invalid file provided.");
@@ -112,6 +111,7 @@ function App() {
 
   }, []);
 
+  // useEffect to set isSynced when isActive and accountHandle are set
   useEffect(() => {
     if (loggedAccount && isActive && accountHandle)
       setIsSynced(true);
@@ -125,7 +125,7 @@ function App() {
             <h1>Bokutou no Game</h1>
             <div className="game-screen">
               <h2 id="auto-save-info">Save: {!isActive || !accountHandle || !isSynced || !loggedAccount? <span id="off">OFF</span> : <span id="on">ON</span>}</h2>
-              <MainMenu/>
+              <MainMenu loggedAccount={loggedAccount} />
               <MatchRoom/>
               <div onClick={() => handleSelectAccount()} id="save-box">
                 <img src="save.png" alt=""/>

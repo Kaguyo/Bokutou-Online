@@ -1,4 +1,4 @@
-import PlayerService from "../../../application/services/player.js";
+import PlayerService from "../../../application/services/player.service.js";
 import Player from "../../../domain/entities/player.js";
 import { validateGetPlayerByIdParams, validatePlayerSchema } from "../schemas/playerSchema.js";
 
@@ -18,10 +18,10 @@ export default class PlayerController {
         return this._playerService.getPlayerById(playerId);
     }
 
-    async upsertPlayer(player: Player): Promise<Error | null> {
+    async upsertPlayer(player: Player): Promise<{ message: string, player: Player | null}> {
         const isValid = validatePlayerSchema(player);
         if (!isValid) {
-            return new Error("Invalid player data");
+            throw new Error("Invalid player data");
         }
 
         return this._playerService.upsertPlayer(player);

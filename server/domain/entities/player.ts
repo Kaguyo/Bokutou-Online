@@ -11,7 +11,7 @@ export default class Player {
     socket: Socket; 
     level: number;
     status: string;
-    player64: string | null = null;
+    avatar64: string;
 
     host: boolean = false;
 
@@ -27,12 +27,13 @@ export default class Player {
         this.matchRoom.connectedPlayers = connectedPlayers;
     }
 
-    constructor(id: string, nickname: string, level: number, status: string, socket: Socket) {
+    constructor(id: string, nickname: string, level: number, status: string, avatar64: string, socket: Socket) {
         this.id = id;
         this.nickname = nickname;
         this.level = level;
         this.status = status;
         this.socket = socket;
+        this.avatar64 = avatar64;
     }
 
     toData() {

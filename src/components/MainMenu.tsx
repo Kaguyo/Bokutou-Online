@@ -5,15 +5,21 @@ import { UserContext } from '../contexts/UserContext';
 import { User } from '../models/User';
 import { Player } from '../models/Player';
 import { socket } from '../api/socket';
+import Account from '../models/Account';
+import { accountService } from '../api/services/account.service';
 
 type MainMenuPages = "DEFAULT" | "VERSUS" | "ARCADE" |
                      "MULTIPLAYER" | "ARCADE SETTINGS" | "MY ACCOUNT"; // Stricts values that can be setted to activeSession useState
 
-const MainMenu: React.FC = () => {
+interface MainMenuProps {
+  loggedAccount: Account | null;
+}
+function MainMenu(props: MainMenuProps): JSX.Element {
   const fileInputRef = useRef<HTMLInputElement>(null); // References the file input element in my account page
   
   const socketCtx = useContext(SocketContext);
   const userCtx = useContext(UserContext);
+  const loggedAccount = props.loggedAccount;
 
   const [activeSession, setActiveSession] = useState<MainMenuPages>("DEFAULT")
   const [optionTeamSize, setOptionTeamSize] = useState<number>(1);
@@ -104,7 +110,10 @@ const MainMenu: React.FC = () => {
         feedHostRoom(updatedMe as User);
       
         socketCtx.emit('clt_sending_player', updatedMe);
-    
+        if (loggedAccount) {
+          const result = await accountService.upsertAccount(null, loggedAccount);
+        } else console.warn("No logged account to update on online selection.");
+
         socketCtx.on('svr_global_connected_players', (playerList: Player[]) => {
           console.log(userCtx?.me?.socketId)
           const filteredArray = playerList.filter(p => p.socketId != updatedMe.socketId);
