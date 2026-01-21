@@ -1,6 +1,5 @@
 import { UserContext } from '../contexts/UserContext';
 import Account from '../models/Account';
-import { User } from '../models/User';
 import { pickImageAndConvert } from '../utils/saveData';
 import './UserCard.css'
 import { Dispatch, JSX, SetStateAction, useContext, useEffect, useState } from 'react';

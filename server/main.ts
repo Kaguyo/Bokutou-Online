@@ -6,9 +6,10 @@ import AccountService from "./application/services/account.service.js";
 import AccountController from "./api/rest/controllers/account.controller.js";
 import setupWebSocketServer from "./api/websocket/ws.server.js";
 import Database from "./infrastructure/repositories/mongodb/connection.js";
+import cors from "cors";
 
 const app = express();
-
+app.use(cors());
 const db = new Database();
 await db.connect();
 const accountRepo = new AccountRepository(db.getConnection());

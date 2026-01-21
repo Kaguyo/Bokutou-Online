@@ -1,10 +1,10 @@
 import { JSX, useContext, useEffect, useState } from "react"
-import { User } from "../models/User"
 import { InviteContext } from "../contexts/InviteContext";
 import './InviteCard.css';
+import { Player } from "../models/Player";
 
 export interface Invite {
-    inviter: User
+    inviter: Player
 }
 
 export function InviteCard(): JSX.Element | null {   

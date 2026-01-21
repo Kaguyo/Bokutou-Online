@@ -6,7 +6,7 @@ interface MatchRoom {
 }
 
 export default class Player {
-    id: string;
+    accountId: string;
     nickname: string;
     socket: Socket; 
     level: number;
@@ -26,8 +26,8 @@ export default class Player {
         this.matchRoom.connectedPlayers = connectedPlayers;
     }
 
-    constructor(id: string, nickname: string, level: number, status: string, socket: Socket) {
-        this.id = id;
+    constructor(accountId: string, nickname: string, level: number, status: string, socket: Socket) {
+        this.accountId = accountId;
         this.nickname = nickname;
         this.level = level;
         this.status = status;
@@ -36,7 +36,7 @@ export default class Player {
 
     toData() {
         return {
-            id: this.id,
+            accountId: this.accountId,
             nickname: this.nickname,
             level: this.level,
             status: this.status,

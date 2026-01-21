@@ -14,7 +14,7 @@ interface ServerToClientEvents {
 }
 
 interface ClientPlayerInput {
-  id: string;
+  accountId: string;
   nickname: string;
   level: number;
   status: string;
@@ -30,7 +30,7 @@ export default function setupWebSocketServer(server: import("http").Server  | im
         console.log(`User connected with ID: ${socket.id}`);
         socket.on('clt_sending_player', (playerData: ClientPlayerInput) => {
             const p = new Player(
-            playerData.id, playerData.nickname, playerData.level,
+            playerData.accountId, playerData.nickname, playerData.level,
             playerData.status, socket
             )
             Listener.receiveConnection(p, socket);

@@ -1,9 +1,9 @@
 import { createContext, Dispatch, SetStateAction, useContext } from "react";
-import { User } from "../models/User";
+import { Player } from "../models/Player";
 
 interface UserContextType {
-  me: User | null;
-  setMe: Dispatch<SetStateAction<User | null>>;
+  me: Player | null;
+  setMe: Dispatch<SetStateAction<Player | null>>;
   profilePicUrl: string | null;
   setProfilePicUrl: Dispatch<SetStateAction<string | null>>;
 }

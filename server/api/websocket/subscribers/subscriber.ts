@@ -4,11 +4,11 @@ import Player from "../../../domain/entities/player.js";
 
 // Define the shape of the data that will actually be sent to the client
 interface PlayerData {
-    id: string;
-    nickname: string;
-    level: number;
-    status: string;
-    socketId?: string; // Optional: include if the client needs it
+  accountId: string;
+  nickname: string;
+  level: number;
+  status: string;
+  socketId?: string; // Optional: include if the client needs it
 }
 
 interface ServerToClientEvents {

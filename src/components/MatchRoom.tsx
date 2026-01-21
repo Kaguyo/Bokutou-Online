@@ -4,6 +4,7 @@ import {UserContext} from '../contexts/UserContext';
 import { User } from "../models/User";
 import { Player } from "../models/Player";
 import { socket } from "../api/socket";
+import env from '../../env.json'
 
 function MatchRoom(): JSX.Element {
     const userCtx = useContext(UserContext);
@@ -75,7 +76,7 @@ function MatchRoom(): JSX.Element {
                     {
                         Player.globalPlayerList.map((p) => 
                             <div key={p.socketId} className="global-playerlist-item">
-                                <div className="item-profile-container"><img alt=" " /></div>
+                                <div className="item-profile-container"><img src={`${env.SERVER_URL}/${p.accountId}/avatar`} alt=" " /></div>
                                 <div className="item-nickname-container"><span>{p.nickname}</span></div>
                                 <div className="item-level-container"><span>Lv. {p.level}</span></div>
                                 <div className="item-status-container"><span>{p.status}</span></div>

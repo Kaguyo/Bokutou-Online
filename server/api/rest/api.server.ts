@@ -68,13 +68,14 @@ export default function setupAccountRoutes(app: Express, accountController: Acco
             // }
 
             // Check if player is online
-            const onlinePlayer = Player.globalPlayerList.find(p => p.id === playerData.id);
+            const onlinePlayer = Player.globalPlayerList.find(p => p.accountId === playerData.id);
 
             // Only save avatar info if player is online
             if (onlinePlayer && req.file) {
                 playerData.avatarPath = req.file.path;
                 playerData.avatarFilename = req.file.filename;
             } else if (!onlinePlayer && req.file) {
+                console.log("Corresponding player wasn't online")
                 // Player is offline - clean up uploaded file
                 await fs.unlink(req.file.path).catch(err => 
                     console.error('Failed to delete uploaded file:', err)

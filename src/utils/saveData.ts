@@ -1,8 +1,8 @@
 import { Dispatch, SetStateAction, useContext } from "react";
 import Account from "../models/Account";
-import { User } from "../models/User";
 import { getStoredAccountHandle, saveAccountToIndexedDB } from "./indexedDb";
 import { accountService } from "../api/services/account.service";
+import { Player } from "../models/Player";
 
 export async function updateAccountFile(handle: FileSystemFileHandle, data: Account): Promise<boolean> {
   try {
@@ -36,8 +36,8 @@ export async function loadGame(handle: FileSystemFileHandle): Promise<Account | 
         return;
       }
 
-      const result = new Account(loadedGame.id, loadedGame.nickname, loadedGame.level, loadedGame.player64);
-      console.log("Game Loaded");
+      const result = new Account(loadedGame.id, loadedGame.nickname, loadedGame.level, loadedGame.avatar64);
+      console.log("Game Loaded", result);
       return result;
 
     } catch(err) {
@@ -48,7 +48,7 @@ export async function loadGame(handle: FileSystemFileHandle): Promise<Account | 
 
 // Função para seleção de imagem e alteração de registro de imagem de perfil da conta.
 export async function pickImageAndConvert(
-  me: User,
+  me: Player, 
   accountHandle: FileSystemFileHandle | null,
   setProfilePicUrl: Dispatch<SetStateAction<string | null>>,
   setLoggedAccount: Dispatch<SetStateAction<Account | null>>): Promise<boolean> {
@@ -81,7 +81,7 @@ export async function pickImageAndConvert(
     reader.readAsDataURL(file);
   });
 
-  const updateAccountObject: Account = new Account("1", me.nickname, me.level, base64);
+  const updateAccountObject: Account = new Account(me.accountId || "1", me.nickname, me.level, base64);
 
   if (accountHandle) {
     let success = await updateAccountFile(accountHandle, updateAccountObject);
@@ -91,7 +91,7 @@ export async function pickImageAndConvert(
     try {
       await saveAccountToIndexedDB(accountHandle);
     } catch (indexedDbErr) {
-      console.error("Failure to save account to IndexedDB.", indexedDbErr);
+      console.error("Failure to save account to IndexedDB:", indexedDbErr);
       return false;
     }
 

@@ -2,7 +2,6 @@ import React, { JSX, useContext, useEffect, useRef, useState } from 'react';
 import './MainMenu.css';
 import { SocketContext } from '../contexts/SocketContext';
 import { UserContext } from '../contexts/UserContext';
-import { User } from '../models/User';
 import { Player } from '../models/Player';
 import { socket } from '../api/socket';
 import Account from '../models/Account';
@@ -32,12 +31,12 @@ function MainMenu(props: MainMenuProps): JSX.Element {
     4: "INFERNAL"
   }
 
-  async function feedHostRoom(user: User): Promise<void> {
-    if (user.hosting)
+  async function feedHostRoom(me: Player): Promise<void> {
+    if (me.hosting)
       return;
 
-    user.hosting = true;
-    user.activeSession = true;
+    me.hosting = true;
+    me.activeSession = true;
   
     const roomWrapper = document.getElementById("multiplayer-room-wrapper");
     if (roomWrapper) {
@@ -59,31 +58,31 @@ function MainMenu(props: MainMenuProps): JSX.Element {
       roomItem.className = "multiplayer-room-item";
       roomItem.style.width = "100%";
       
-      const player64Container = document.createElement('div');
-      player64Container.className = "profile-picture-container";
+      const avatar64Container = document.createElement('div');
+      avatar64Container.className = "profile-picture-container";
 
-      const player64 = document.createElement('img');
-      player64.className = "user-pfp";
-      player64.src = `${userCtx?.profilePicUrl}` || " ";
+      const avatar64 = document.createElement('img');
+      avatar64.className = "user-pfp";
+      avatar64.src = `${userCtx?.profilePicUrl}` || " ";
 
       const playerNameContainer = document.createElement('div');
       playerNameContainer.className = "player-name-container";
 
       const playerName = document.createElement('p');
       playerName.className = "player-name";
-      playerName.textContent = user.nickname!;
+      playerName.textContent = me.nickname!;
 
       const playerLevelContainer = document.createElement('div');
       playerLevelContainer.className = "player-level-container";
       
       const playerLevel = document.createElement('p');
       playerLevel.className = "player-level"
-      playerLevel.textContent = "Lv. " + (user.level.toString());
+      playerLevel.textContent = "Lv. " + (me.level.toString());
 
-      player64Container.appendChild(player64);
+      avatar64Container.appendChild(avatar64);
       playerNameContainer.appendChild(playerName);
       playerLevelContainer.appendChild(playerLevel);
-      roomItem.appendChild(player64Container);
+      roomItem.appendChild(avatar64Container);
       roomItem.appendChild(playerNameContainer);
       roomItem.appendChild(playerLevelContainer);
       roomBox.appendChild(roomItem);
@@ -106,16 +105,20 @@ function MainMenu(props: MainMenuProps): JSX.Element {
       await Promise.race([connectionPromise, timeoutPromise]);
       if (socketCtx?.connected && userCtx?.me) {
         const updatedMe = { ...userCtx.me, socketId: socket.id, status: "Online" };
-        userCtx.setMe(updatedMe as User);
-        feedHostRoom(updatedMe as User);
-      
-        socketCtx.emit('clt_sending_player', updatedMe);
+        userCtx.setMe(updatedMe as Player);
+        feedHostRoom(updatedMe as Player);
+        let result;
         if (loggedAccount) {
-          const result = await accountService.upsertAccount(null, loggedAccount);
+          result = await accountService.upsertAccount(null, loggedAccount);
         } else console.warn("No logged account to update on online selection.");
 
+        if (result && result.id) {
+          console.log(result)
+          updatedMe.accountId = result.id; // Atualiza o ID
+        }
+
+        socketCtx.emit('clt_sending_player', updatedMe);
         socketCtx.on('svr_global_connected_players', (playerList: Player[]) => {
-          console.log(userCtx?.me?.socketId)
           const filteredArray = playerList.filter(p => p.socketId != updatedMe.socketId);
           Player.globalPlayerList = filteredArray;
           console.warn(Player.globalPlayerList);

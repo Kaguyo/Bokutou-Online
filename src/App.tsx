@@ -5,7 +5,6 @@ import UserCard from './components/UserCard';
 import MatchRoom from './components/MatchRoom';
 import { InviteCard } from './components/InviteCard';
 import { UserContext } from './contexts/UserContext';
-import { User } from './models/User';
 import { SocketContext } from './contexts/SocketContext';
 import { InviteContext } from './contexts/InviteContext';
 import { socket } from './api/socket';
@@ -15,12 +14,13 @@ import GuideToSave from './components/GuideToSave';
 import { verifyAccountPermission, loadGame, pickMyAccountFile } from './utils/saveData';
 import Account from './models/Account';
 import guest from '../guest.json';
+import { Player } from './models/Player';
 
 function App() {
   const [accountHandle, setAccountHandle] = useState<FileSystemFileHandle | null>(null);
   const [isActive, setIsActive] = useState(false);
   const [isSynced, setIsSynced] = useState(false);
-  const [me, setMe] = useState<User | null>(null);
+  const [me, setMe] = useState<Player | null>(null);
   const [profilePicUrl, setProfilePicUrl] = useState<string | null>(null);
   const [inviteList, setInviteList] = useState<Invite[]>([]);
   const [loggedAccount, setLoggedAccount] = useState<Account | null>(null);
@@ -47,11 +47,11 @@ function App() {
       if (!saveHandle) throw Error("Failure on attempt to get account handle from IndexedDB.");
       
       setLoadingState?.("Carregando dados da conta...");
-      const newMe = new User(socket.id, account!.nickname, account!.level, "Offline");
+      const newMe = new Player(socket.id!, account!.nickname, account!.level, "Offline");
       setAccountHandle(saveHandle);
       setLoggedAccount(account);
       setMe(newMe);
-      User.updateProfilePicture(profilePicUrl, account, setProfilePicUrl);
+      Player.updateProfilePicture(profilePicUrl, account, setProfilePicUrl);
       setLoadingState?.(null);
       setIsLoading?.(false);
       socket.disconnect();
@@ -62,7 +62,7 @@ function App() {
   
   // useEffect for invites sent to this client
   useEffect(() => {
-    function handleNewInvite(newInviter: User) {
+    function handleNewInvite(newInviter: Player) {
       if (!inviteList.some(i => i.inviter.socketId === newInviter.socketId)) {
         const newInvite: Invite = { inviter: newInviter };
         setInviteList(prev => [...prev, newInvite]);
@@ -88,19 +88,19 @@ function App() {
         setIsActive(true);
         const loadAccount = await loadGame(handle);
         if (!loadAccount) { // login guest caso não tenha progresso salvo.
-          const guestAccount = new Account(guest.id.toString(), guest.nickname, guest.level, guest.player64Base64);
-          const newMe = new User(socket.id, guest.nickname, guest.level, guest.status);
+          const guestAccount = new Account(guest.id.toString(), guest.nickname, guest.level, guest.avatar64Base64);
+          const newMe = new Player(socket.id!, guest.nickname, guest.level, guest.status);
           setLoggedAccount(guestAccount);
           setMe(newMe);
-          User.updateProfilePicture(profilePicUrl, guestAccount, setProfilePicUrl);
+          Player.updateProfilePicture(profilePicUrl, guestAccount, setProfilePicUrl);
           return;
         }
 
         // login com progresso detectado.
         setLoggedAccount(loadAccount);
-        const newMe = new User(socket.id, loadAccount!.nickname, loadAccount!.level, "Offline");
+        const newMe = new Player(socket.id!, loadAccount!.nickname, loadAccount!.level, "Offline");
         setMe(newMe);
-        User.updateProfilePicture(profilePicUrl, loadAccount, setProfilePicUrl);
+        Player.updateProfilePicture(profilePicUrl, loadAccount, setProfilePicUrl);
         setIsSynced(true);
       } catch (error) {
         console.error(error);

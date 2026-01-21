@@ -1,13 +1,15 @@
 export default class Account {
     id: string;
     nickname: string;
-    player64: string;
+    avatar64: string;
     level: number;
+    email: string = "";
+    password: string = "";
 
-    constructor(id: string, nickname: string, level: number, player64ToBase64: string) {
+    constructor(id: string, nickname: string, level: number, avatar64ToBase64: string) {
         this.id = id;
         this.nickname = nickname;
         this.level = level;
-        this.player64 = player64ToBase64;
+        this.avatar64 = avatar64ToBase64;
     }
 }
