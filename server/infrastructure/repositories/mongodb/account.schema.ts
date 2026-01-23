@@ -22,14 +22,14 @@ export const AccountSchema = new Schema({
     type: String, 
     default: null 
   },
-  avatarPath: { 
-    type: String, 
-    default: null 
+  email: {
+    type: String,
+    default: ""
   },
-  avatarFilename: { 
-    type: String, 
-    default: null 
-  },
+  password: {
+    type: String,
+    default: ""
+  }
   // Add any other fields your Player entity has
   // For example:
   // experience: { type: Number, default: 0 },

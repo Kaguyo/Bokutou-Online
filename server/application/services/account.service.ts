@@ -13,7 +13,21 @@ export default class AccountService {
     return account;
   }
 
-  async upsertAccount(account: Account): Promise<{ message: string, account: Account | null}> {
-    return this._accountRepository.upsertAccount(account);
+  async upsertAccount(accountData: Account | any): Promise<{ message: string, account: Account | null}> {
+    try {
+      // Parse do JSON se vier como string
+      let account: Account;
+      if (typeof accountData === 'string') {
+        account = JSON.parse(accountData);
+      } else if (typeof accountData.account === 'string') {
+        account = JSON.parse(accountData.account);
+      } else {
+        account = accountData;
+      }
+      return this._accountRepository.upsertAccount(account);
+
+    } catch (err) {
+      throw err instanceof Error ? err : new Error(String(err));
+    } 
   }
 }

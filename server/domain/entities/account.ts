@@ -3,6 +3,8 @@ export default class Account {
     nickname: string;
     avatar64: string;
     level: number;
+    email: string = "";
+    password: string = "";
 
     constructor(id: string, nickname: string, level: number, avatar64: string) {
         this.id = id;

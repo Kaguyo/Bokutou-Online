@@ -12,12 +12,19 @@ export default class AccountRepository {
 
   async upsertAccount(account: Account): Promise<{ message: string; account: Account | null }> {
     try {
-      if (!account.id) {
+      /*  
+      when condition is matched, finds the last user in the server and
+      generates a new ACCOUNT ID from there 
+      */
+  
+      if (!account.id || typeof account.id !== "string" || account.id.length !== 8) {
+
+        // Busca último jogador para gerar novo ID
         const lastPlayer = await this.model
           .findOne({}, { id: 1 })
           .sort({ id: -1 })
           .lean();
-        
+
         if (lastPlayer && lastPlayer.id) {
           account.id = (parseInt(lastPlayer.id) + 1).toString();
         } else {
@@ -25,6 +32,8 @@ export default class AccountRepository {
         }
       }
 
+      // Upserts account document in mongo for the specified account.id
+      // Uses provided account json as update setter 
       const result = await this.model.findOneAndUpdate(
         { id: account.id },
         { $set: account },
@@ -58,7 +67,7 @@ export default class AccountRepository {
       return new Account(
         accountData.id,
         accountData.nickname || '', 
-        accountData.level || 0,
+        accountData.level || 1,
         accountData.avatar64 || ''
       );
     } catch (err) {

@@ -1,41 +1,12 @@
 import { Express, Request, Response } from "express";
-import Player from "../../domain/entities/player.js";
-import multer from "multer";
-import path from "path";
 import fs from "fs/promises";
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
 import AccountController from "./controllers/account.controller.js";
+import path from "path";
+import { fileURLToPath } from "url";
 
-// Fix for __dirname in ES modules
+// cria __filename e __dirname em ES Modules
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const storage = multer.diskStorage({
-  destination: async (req, file, cb) => {
-    const uploadDir = path.join(__dirname, '../uploads/avatars');
-    await fs.mkdir(uploadDir, { recursive: true });
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    const playerId = req.body.id;
-    const ext = path.extname(file.originalname);
-    cb(null, `${playerId}${ext}`);
-  }
-});
-
-const upload = multer({ 
-  storage,
-  limits: { fileSize: 5 * 1024 * 1024 },
-  fileFilter: (req, file, cb) => {
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
-    if (allowedTypes.includes(file.mimetype)) {
-      cb(null, true);
-    } else {
-      cb(new Error('Invalid file type'));
-    }
-  }
-});
+const __dirname = path.dirname(__filename);
 
 export default function setupAccountRoutes(app: Express, accountController: AccountController): void {
     app.get('/accounts/:id', async (req: Request, res: Response) => {
@@ -57,52 +28,40 @@ export default function setupAccountRoutes(app: Express, accountController: Acco
         }
     });
 
-    app.post('/accounts', upload.single('avatar'), async (req: Request, res: Response) => {
+    app.post('/accounts', async (req: Request, res: Response) => {
         try {
-            console.log("Received POST/request with:", req.body)
-            const playerData = req.body;
-            //const isValid = validatePlayerSchema(playerData);
+            const accountData = req.body;
 
-            // if (!isValid) {
-            //     return res.status(400).json({ message: "Invalid player data" });
-            // }
+            const { avatar64, id } = accountData;
 
-            // Check if player is online
-            const onlinePlayer = Player.globalPlayerList.find(p => p.accountId === playerData.id);
+            if (avatar64) {
+                const uploadDir = path.join(__dirname, '../../uploads/avatars');
+                await fs.mkdir(uploadDir, { recursive: true });
 
-            // Only save avatar info if player is online
-            if (onlinePlayer && req.file) {
-                playerData.avatarPath = req.file.path;
-                playerData.avatarFilename = req.file.filename;
-            } else if (!onlinePlayer && req.file) {
-                console.log("Corresponding player wasn't online")
-                // Player is offline - clean up uploaded file
-                await fs.unlink(req.file.path).catch(err => 
-                    console.error('Failed to delete uploaded file:', err)
-                );
+                // Separar dados base64 da parte antes da vírgula se tiver data URI
+                const base64Data = avatar64.split(',').pop();
+                const buffer = Buffer.from(base64Data as string, 'base64');
+
+                // Determinar extensão (aqui exemplo sempre png — pode adaptar)
+                const filename = `${id}.png`;
+                const fullPath = path.join(uploadDir, filename);
+
+                await fs.writeFile(fullPath, buffer);
             }
-            const result = await accountController.upsertAccount(playerData);
-            
+
+            const result = await accountController.upsertAccount(accountData);
+
             res.status(200).json(result);
-
         } catch (error: any) {
-            console.error('Error upserting player:', error);
-            
-            if (error instanceof multer.MulterError) {
-                if (error.code === 'LIMIT_FILE_SIZE') {
-                    return res.status(400).json({ message: "File too large (max 5MB)" });
-                }
-                return res.status(400).json({ message: `Upload error: ${error.message}` });
-            }
-            
-            res.status(400).json({ message: "Invalid player data" });
+            console.error(error);
+            res.status(400).json({ message: "Erro ao salvar conta" });
         }
     });
 
     app.get('/accounts/:id/avatar', async (req: Request, res: Response) => {
         try {
             const playerId = req.params.id;
-            const uploadDir = path.join(__dirname, '../uploads/avatars');
+            const uploadDir = path.join(__dirname, '../../uploads/avatars');
             
             const extensions = ['.png', '.jpg', '.jpeg', '.gif'];
             let filePath: string | null = null;
@@ -130,6 +89,9 @@ export default function setupAccountRoutes(app: Express, accountController: Acco
                 '.gif': 'image/gif'
             }[ext] || 'application/octet-stream';
 
+            res.setHeader("Access-Control-Allow-Origin", "*");
+            res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+            res.setHeader("Access-Control-Allow-Headers", "Content-Type");
             res.setHeader('Content-Type', contentType);
             res.setHeader('Cache-Control', 'public, max-age=31536000');
             

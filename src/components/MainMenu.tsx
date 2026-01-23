@@ -5,7 +5,9 @@ import { UserContext } from '../contexts/UserContext';
 import { Player } from '../models/Player';
 import { socket } from '../api/socket';
 import Account from '../models/Account';
-import { accountService } from '../api/services/account.service';
+import { accountHttp } from '../api/account/accountHttp';
+import { saveAccountFile } from '../utils/saveData';
+import { getStoredAccountHandle } from '../utils/indexedDb';
 
 type MainMenuPages = "DEFAULT" | "VERSUS" | "ARCADE" |
                      "MULTIPLAYER" | "ARCADE SETTINGS" | "MY ACCOUNT"; // Stricts values that can be setted to activeSession useState
@@ -104,20 +106,28 @@ function MainMenu(props: MainMenuProps): JSX.Element {
     try {
       await Promise.race([connectionPromise, timeoutPromise]);
       if (socketCtx?.connected && userCtx?.me) {
-        const updatedMe = { ...userCtx.me, socketId: socket.id, status: "Online" };
-        userCtx.setMe(updatedMe as Player);
-        feedHostRoom(updatedMe as Player);
-        let result;
+        let response
         if (loggedAccount) {
-          result = await accountService.upsertAccount(null, loggedAccount);
-        } else console.warn("No logged account to update on online selection.");
-
-        if (result && result.id) {
-          console.log(result)
-          updatedMe.accountId = result.id; // Atualiza o ID
-        }
-
+          response = await accountHttp.upsertAccount(loggedAccount);
+          const accountHandle = await getStoredAccountHandle()
+          if (accountHandle){
+            const success = await saveAccountFile(accountHandle, response)
+            if (!success) {
+              throw Error("Couldn't update account file")
+            }
+          } else {
+            throw Error("No account handle was found")
+          }
+        } else throw Error("Not connected to an account");
+        
+        const updatedMe: Player = new Player(response.id, socket.id!, response.nickname, response.level, "Online") 
+        
+        userCtx.setMe(updatedMe);
+        feedHostRoom(updatedMe);
+        // Sends the player of this account to the websocket
         socketCtx.emit('clt_sending_player', updatedMe);
+        
+        // Grabs other players connected to the websocket
         socketCtx.on('svr_global_connected_players', (playerList: Player[]) => {
           const filteredArray = playerList.filter(p => p.socketId != updatedMe.socketId);
           Player.globalPlayerList = filteredArray;
@@ -127,9 +137,25 @@ function MainMenu(props: MainMenuProps): JSX.Element {
         setActiveSession("MULTIPLAYER");
       }
     } catch (error) {
-      console.warn("Erro ao tentar se conectar ao servidor. (Tempo esgotado)");
-      socketCtx?.disconnect();
-      return;
+      if (error == "Couldn't save account file") {
+        /* The handler for this error must inform the user that 
+        their account file couldn't be saved, but continue ahead
+        */
+      } else if (error == "No account handle was found") {
+        /* The handler for this error must inform the user that 
+        their account file handler wasn't found, and guide them through account save selection
+        to make up their handle, then retry until they give up or another error interrupts
+        */
+      } else if (error == "Not connected to an account") {
+        /* The handler for this error must inform the user that 
+        they aren't connected to an account yet, and track through login/signup then retry
+        or give up
+        */
+      } else {
+        console.error("Error when attempting to connect to the server:", error);
+        socketCtx?.disconnect();
+        return;
+      }
     }
   }
 
@@ -160,6 +186,7 @@ function MainMenu(props: MainMenuProps): JSX.Element {
     "MY ACCOUNT" : "DEFAULT"
   }
 
+  // Handles life cycle for listener through main menu pages
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {

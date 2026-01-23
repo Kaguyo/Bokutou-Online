@@ -1,7 +1,6 @@
 import { JSX, useContext, useEffect, useState } from "react";
 import './MatchRoom.css'
 import {UserContext} from '../contexts/UserContext';
-import { User } from "../models/User";
 import { Player } from "../models/Player";
 import { socket } from "../api/socket";
 import env from '../../env.json'
@@ -10,13 +9,13 @@ function MatchRoom(): JSX.Element {
     const userCtx = useContext(UserContext);
     const [searchingGlobalPlayers, setSearchingGlobalPlayers] = useState<boolean>(false);
 
-    function handleGlobalPlayerListBtn(user: User | null | undefined, newMode: boolean): void {
+    function handleGlobalPlayerListBtn(user: Player | null | undefined, newMode: boolean): void {
         if (user?.hosting) {
             setSearchingGlobalPlayers(newMode);
         }
     }
 
-    function handleInvitePlayerBtn(socketId: string, me: User | null | undefined): void {
+    function handleInvitePlayerBtn(socketId: string, me: Player | null | undefined): void {
         if (me){
             socket.emit("clt_inviting_player", socketId, me);
         }
@@ -76,12 +75,12 @@ function MatchRoom(): JSX.Element {
                     {
                         Player.globalPlayerList.map((p) => 
                             <div key={p.socketId} className="global-playerlist-item">
-                                <div className="item-profile-container"><img src={`${env.SERVER_URL}/${p.accountId}/avatar`} alt=" " /></div>
+                                <div className="item-profile-container"><img src={`${env.SERVER_URL}/accounts/${p.accountId}/avatar`} alt=" " /></div>
                                 <div className="item-nickname-container"><span>{p.nickname}</span></div>
                                 <div className="item-level-container"><span>Lv. {p.level}</span></div>
                                 <div className="item-status-container"><span>{p.status}</span></div>
                                 <div className="item-add-friend-container">+</div>
-                                <div className="item-invite-player-container" onClick={() => handleInvitePlayerBtn(p.socketId, userCtx?.me)}>+</div>
+                                <div className="item-invite-player-container" onClick={() => handleInvitePlayerBtn(p.socketId!, userCtx?.me)}>+</div>
                             </div>
                         )
                     }

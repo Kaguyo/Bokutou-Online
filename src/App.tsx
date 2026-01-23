@@ -47,7 +47,7 @@ function App() {
       if (!saveHandle) throw Error("Failure on attempt to get account handle from IndexedDB.");
       
       setLoadingState?.("Carregando dados da conta...");
-      const newMe = new Player(socket.id!, account!.nickname, account!.level, "Offline");
+      const newMe = new Player(loggedAccount?.id!, socket.id!, account!.nickname, account!.level, "Offline");
       setAccountHandle(saveHandle);
       setLoggedAccount(account);
       setMe(newMe);
@@ -89,7 +89,7 @@ function App() {
         const loadAccount = await loadGame(handle);
         if (!loadAccount) { // login guest caso não tenha progresso salvo.
           const guestAccount = new Account(guest.id.toString(), guest.nickname, guest.level, guest.avatar64Base64);
-          const newMe = new Player(socket.id!, guest.nickname, guest.level, guest.status);
+          const newMe = new Player(loggedAccount?.id!, socket.id!, guest.nickname, guest.level, guest.status);
           setLoggedAccount(guestAccount);
           setMe(newMe);
           Player.updateProfilePicture(profilePicUrl, guestAccount, setProfilePicUrl);
@@ -98,7 +98,7 @@ function App() {
 
         // login com progresso detectado.
         setLoggedAccount(loadAccount);
-        const newMe = new Player(socket.id!, loadAccount!.nickname, loadAccount!.level, "Offline");
+        const newMe = new Player(loggedAccount?.id!, socket.id!, loadAccount!.nickname, loadAccount!.level, "Offline");
         setMe(newMe);
         Player.updateProfilePicture(profilePicUrl, loadAccount, setProfilePicUrl);
         setIsSynced(true);

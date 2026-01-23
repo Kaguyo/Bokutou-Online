@@ -1,10 +1,10 @@
 import { Dispatch, SetStateAction, useContext } from "react";
 import Account from "../models/Account";
 import { getStoredAccountHandle, saveAccountToIndexedDB } from "./indexedDb";
-import { accountService } from "../api/services/account.service";
+import { accountHttp } from "../api/account/accountHttp";
 import { Player } from "../models/Player";
 
-export async function updateAccountFile(handle: FileSystemFileHandle, data: Account): Promise<boolean> {
+export async function saveAccountFile(handle: FileSystemFileHandle, data: Account): Promise<boolean> {
   try {
     const writable = await (handle as any).createWritable();
     await writable.write(JSON.stringify(data, null, 2)); // JSON formatado
@@ -81,13 +81,20 @@ export async function pickImageAndConvert(
     reader.readAsDataURL(file);
   });
 
-  const updateAccountObject: Account = new Account(me.accountId || "1", me.nickname, me.level, base64);
+  let updateAccountObject: Account = new Account(me.accountId || "1", me.nickname, me.level, base64);
+
+  try {
+    updateAccountObject = await accountHttp.upsertAccount(updateAccountObject);
+    console.info("Account uploaded to server successfully.");
+  } catch (error) {
+    console.warn("Account upload to server failed.", error);
+  }
 
   if (accountHandle) {
-    let success = await updateAccountFile(accountHandle, updateAccountObject);
-    
+    let success = await saveAccountFile(accountHandle, updateAccountObject);
+  
     if (!success) return false;
-    
+  
     try {
       await saveAccountToIndexedDB(accountHandle);
     } catch (indexedDbErr) {
@@ -96,13 +103,6 @@ export async function pickImageAndConvert(
     }
 
     setLoggedAccount(updateAccountObject);
-  }
-
-  try {
-    await accountService.upsertAccount(file, updateAccountObject);
-    console.info("Account uploaded to server successfully.");
-  } catch (error) {
-    console.warn("Account upload to server failed.", error);
   }
   
   return true;

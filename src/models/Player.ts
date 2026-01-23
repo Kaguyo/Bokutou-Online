@@ -12,7 +12,7 @@ export class Player {
     level: number;
     status: string;
     avatar64: string = "";
-    accountId: string = "";
+    accountId: string;
     
     host: boolean = false;
 
@@ -23,7 +23,8 @@ export class Player {
         connectedPlayers: []
     }
 
-    constructor(socketId: string, nickname: string, level: number, status: string){
+    constructor(accountId: string, socketId: string, nickname: string, level: number, status: string){
+        this.accountId = accountId
         this.socketId = socketId;
         this.nickname = nickname;
         this.level = level;
