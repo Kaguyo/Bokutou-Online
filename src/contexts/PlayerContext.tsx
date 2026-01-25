@@ -1,12 +1,19 @@
-import { createContext, useContext } from "react";
+import { createContext, Dispatch, SetStateAction, useContext } from "react";
 import { Player } from "../models/Player";
 
-export const PlayerContext = createContext<Player | null>(null);
+interface PlayerContextType {
+  me: Player | null;
+  setMe: Dispatch<SetStateAction<Player | null>>;
+  profilePicUrl: string | null;
+  setProfilePicUrl: Dispatch<SetStateAction<string | null>>;
+}
 
-export function usePlayer() {
+export const PlayerContext = createContext<PlayerContextType | null>(null);
+
+export function useUser() {
     const ctx = useContext(PlayerContext);
     if (!ctx){
-        throw new Error("usePlayer deve ser usado dentro de PlayerProvider");
+        throw new Error("useUser deve ser usado dentro de UserProvider");
     }
     return ctx;
 }

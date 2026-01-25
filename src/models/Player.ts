@@ -1,13 +1,25 @@
 import { Dispatch, SetStateAction } from "react";
 import Account from "./Account";
 
+
+export interface PlayerData {
+  accountId: string;
+  nickname: string;
+  level: number;
+  status: string;
+  socketId: string;
+  avatar64: string;
+  host: boolean;
+}
+
 export interface MatchRoom {
     sessionLocked: boolean;
-    connectedPlayers: Player[];
+    connectedPlayers: PlayerData[];
+    sessionPassword: string;
 }
 
 export class Player {
-    socketId?: string;
+    socketId: string;
     nickname: string;
     level: number;
     status: string;
@@ -20,6 +32,7 @@ export class Player {
 
     matchRoom: MatchRoom = {
         sessionLocked: true,
+        sessionPassword: "",
         connectedPlayers: []
     }
 
@@ -32,8 +45,20 @@ export class Player {
     }
 
     activeSession: boolean = false; // tracks whether the player is within a matching room
-    hosting: boolean = false; // tracks whether the player is hosting a matching room
 
+    toData() {
+        const playerData: PlayerData = {
+            accountId: this.accountId,
+            nickname: this.nickname,
+            level: this.level,
+            status: this.status,
+            socketId: this.socketId,
+            avatar64: this.avatar64,
+            host: this.host
+        }
+
+        return playerData;
+    }
 
     static updateProfilePicture(profilePicUrl: string | null, loggedAccount: Account | null, setProfilePicUrl: Dispatch<SetStateAction<string | null>>){
         if (loggedAccount?.avatar64) {

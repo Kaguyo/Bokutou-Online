@@ -1,24 +1,18 @@
 import { Server as IOServer, Socket } from "socket.io";
-import Player from "../../domain/entities/player.js";
+import Player, { MatchRoom, PlayerData } from "../../domain/entities/player.js";
 import Listener from "./listeners/listener.js";
 import Subscriber from "./subscribers/subscriber.js";
 
 interface ClientToServerEvents {
-  clt_sending_player: (player: Player) => void;
+  clt_sending_player: (playerData: PlayerData) => void;
   clt_inviting_player: (socketId: string, inviter: Player) => void;
+  clt_respond_invite: (invitedPlayer: PlayerData, inviter: Player, acceptInvite: boolean ) => Promise<MatchRoom | null>;
 }
 
 interface ServerToClientEvents {
-  svr_global_connected_players: (players: Player[]) => void;
+  svr_global_connected_players: (players: PlayerData[]) => void;
   svr_transfer_invite: (inviter: Player) => void;
-}
-
-interface ClientPlayerInput {
-  accountId: string;
-  nickname: string;
-  level: number;
-  status: string;
-  avatar64: string;
+  svr_give_updated_matchRoom: (matchRoom: MatchRoom) => void;
 }
 
 export default function setupWebSocketServer(server: import("http").Server  | import("https").Server) {
@@ -27,13 +21,13 @@ export default function setupWebSocketServer(server: import("http").Server  | im
     });
 
     io.on('connection', (socket: Socket) => {
-        console.log(`User connected with ID: ${socket.id}`);
-        socket.on('clt_sending_player', (playerData: ClientPlayerInput) => {
+        console.log(`Player connected with ID: ${socket.id}`);
+        socket.on('clt_sending_player', (playerData: PlayerData) => {
             const p = new Player(
             playerData.accountId, playerData.nickname, playerData.level,
-            playerData.status, socket
+            playerData.status, socket.id
             )
-            Listener.receiveConnection(p, socket);
+            Listener.receiveConnection(p);
             Subscriber.answerConnection(socket, io); 
         });
 
@@ -45,6 +39,36 @@ export default function setupWebSocketServer(server: import("http").Server  | im
             console.log(`User disconnected with ID: ${socket.id}`);
             Listener.receiveDisconnection(socket);
             Subscriber.answerDisconnection(socket, io);
+        });
+
+        socket.on('clt_respond_invite', (playerData: PlayerData, inviter: Player, accepted) => {
+            if (!accepted) return;
+
+            const instanciatedInviter = new Player(
+                inviter.accountId,
+                inviter.nickname,
+                inviter.level,
+                inviter.status,
+                inviter.socketId
+            );
+            
+            console.log(`Player ${playerData.nickname} accepted ${inviter.nickname}'s invite`);
+            
+            const oldRoom = inviter.matchRoom;
+            if (!oldRoom.connectedPlayers?.some(p => p.socketId == instanciatedInviter.socketId))
+                oldRoom.connectedPlayers?.push(instanciatedInviter.toData());
+
+            const updatedRoom = inviter.matchRoom;
+            if (!oldRoom.connectedPlayers?.some(p => p.socketId == playerData.socketId))
+                updatedRoom.connectedPlayers?.push(playerData);
+
+            updatedRoom.connectedPlayers?.forEach((p) => {
+                if (![playerData.accountId].includes(p.accountId)) {
+                    io.to(p.socketId).emit("svr_give_updated_matchRoom", updatedRoom);
+                } else {
+                    io.to(p.socketId).emit("svr_give_updated_matchRoom", oldRoom);
+                }
+            });
         });
     });
 }

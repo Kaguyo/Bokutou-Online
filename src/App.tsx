@@ -4,7 +4,7 @@ import MainMenu from './components/MainMenu';
 import UserCard from './components/UserCard';
 import MatchRoom from './components/MatchRoom';
 import { InviteCard } from './components/InviteCard';
-import { UserContext } from './contexts/UserContext';
+import { PlayerContext } from './contexts/PlayerContext';
 import { SocketContext } from './contexts/SocketContext';
 import { InviteContext } from './contexts/InviteContext';
 import { socket } from './api/socket';
@@ -120,7 +120,7 @@ function App() {
   return (
     <>
       <SocketContext.Provider value={socket}>
-        <UserContext.Provider value={{me: me, setMe, profilePicUrl: profilePicUrl, setProfilePicUrl}}>
+        <PlayerContext.Provider value={{me: me, setMe, profilePicUrl: profilePicUrl, setProfilePicUrl}}>
           <InviteContext.Provider value={{ inviteList: inviteList, setInviteList}}>
             <h1>Bokutou no Game</h1>
             <div className="game-screen">
@@ -144,7 +144,7 @@ function App() {
               handleSelectAccount={handleSelectAccount}/>  
             </div>
           </InviteContext.Provider>
-        </UserContext.Provider>
+        </PlayerContext.Provider>
       </SocketContext.Provider>
     </>
   );

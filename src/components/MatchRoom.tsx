@@ -1,22 +1,20 @@
 import { JSX, useContext, useEffect, useState } from "react";
 import './MatchRoom.css'
-import {UserContext} from '../contexts/UserContext';
+import { PlayerContext } from '../contexts/PlayerContext';
 import { Player } from "../models/Player";
 import { socket } from "../api/socket";
 import env from '../../env.json'
 
 function MatchRoom(): JSX.Element {
-    const userCtx = useContext(UserContext);
+    const playerCtx = useContext(PlayerContext);
     const [searchingGlobalPlayers, setSearchingGlobalPlayers] = useState<boolean>(false);
 
-    function handleGlobalPlayerListBtn(user: Player | null | undefined, newMode: boolean): void {
-        if (user?.hosting) {
-            setSearchingGlobalPlayers(newMode);
-        }
+    function handleGlobalPlayerListBtn(newMode: boolean): void {
+        setSearchingGlobalPlayers(newMode);
     }
 
     function handleInvitePlayerBtn(socketId: string, me: Player | null | undefined): void {
-        if (me){
+        if (me?.host || me?.matchRoom.sessionLocked){
             socket.emit("clt_inviting_player", socketId, me);
         }
     }
@@ -28,7 +26,7 @@ function MatchRoom(): JSX.Element {
 
         const handleKeyDown = (event: KeyboardEvent) => {
             if (event.key === "Escape") {
-                handleGlobalPlayerListBtn(userCtx?.me, false);
+                handleGlobalPlayerListBtn(false);
             }
         };
         
@@ -59,28 +57,27 @@ function MatchRoom(): JSX.Element {
                         <div id="locker"></div>
                     </div>
                     <div id="password-container"></div>
-                    <div id="invite-player-container" onClick={() => handleGlobalPlayerListBtn(userCtx?.me, true)}>+</div>
+                    <div id="invite-player-container" onClick={() => handleGlobalPlayerListBtn(true)}>+</div>
                 </div>
                 <div id="multiplayer-room-box">
 
-                    <div></div>
                 </div>
             </div>
 
             <div id="global-playerlist-container">
                 <div id="options-bar">
-                    <div id="exit-btn"onClick={() => handleGlobalPlayerListBtn(userCtx?.me, false)}></div>
+                    <div id="exit-btn"onClick={() => handleGlobalPlayerListBtn(false)}></div>
                 </div>
                 <div>
                     {
                         Player.globalPlayerList.map((p) => 
                             <div key={p.socketId} className="global-playerlist-item">
-                                <div className="item-profile-container"><img src={`${env.SERVER_URL}/accounts/${p.accountId}/avatar`} alt=" " /></div>
+                                <div className="item-profile-container"><img src={`${env.SERVER_URL}/accounts/${p.accountId}/avatar`} alt="" /></div>
                                 <div className="item-nickname-container"><span>{p.nickname}</span></div>
                                 <div className="item-level-container"><span>Lv. {p.level}</span></div>
                                 <div className="item-status-container"><span>{p.status}</span></div>
                                 <div className="item-add-friend-container">+</div>
-                                <div className="item-invite-player-container" onClick={() => handleInvitePlayerBtn(p.socketId!, userCtx?.me)}>+</div>
+                                <div className="item-invite-player-container" onClick={() => handleInvitePlayerBtn(p.socketId!, playerCtx?.me)}>+</div>
                             </div>
                         )
                     }

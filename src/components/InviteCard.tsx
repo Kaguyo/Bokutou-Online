@@ -1,7 +1,9 @@
-import { JSX, useContext, useEffect, useState } from "react"
+import { JSX, useContext, useEffect, useRef } from "react"
 import { InviteContext } from "../contexts/InviteContext";
 import './InviteCard.css';
-import { Player } from "../models/Player";
+import { MatchRoom, Player } from "../models/Player";
+import { SocketContext } from '../contexts/SocketContext';
+import { PlayerContext } from '../contexts/PlayerContext'
 
 export interface Invite {
     inviter: Player
@@ -9,27 +11,54 @@ export interface Invite {
 
 export function InviteCard(): JSX.Element | null {   
     const { inviteList, setInviteList } = useContext(InviteContext)!;
-    const firstInvite = inviteList[0];
-    
+    const firstInvite: Invite | null = inviteList[0];
+    const timerRef = useRef<NodeJS.Timeout | null>(null);
+    const socketCtx = useContext(SocketContext);
+    const playerCtx = useContext(PlayerContext);
+
     useEffect(() => {
-        if (!firstInvite) return;
         const inviteCard = document.getElementById("invite-card-box");
 
-        const timer = setTimeout(() => {
+        if (!firstInvite) {
             inviteCard?.classList.remove('active');
-            setInviteList(prev => prev!.slice(1));
-        }, 10000); // 10s
-        
+            return;
+        }
+
         if (inviteCard) {
             inviteCard.classList.add('active');
         }
 
-        return () => clearTimeout(timer);
+        // Start timeout
+        timerRef.current = setTimeout(() => {
+            inviteCard?.classList.remove('active');
+            setInviteList(prev => prev!.slice(1));
+        }, 10000);
+
+        // Cleanup
+        return () => {
+            if (timerRef.current) clearTimeout(timerRef.current);
+        };
     }, [firstInvite, setInviteList]);
 
     if (!firstInvite) {
         return <div id="invite-card-box"></div>
     }
+
+    function handleRespondInviteCard(accepted: boolean) {
+        // Clear timer to avoid race conditions
+        if (timerRef.current) clearTimeout(timerRef.current);
+
+        if (!accepted) {
+            // Remove current invite
+            setInviteList(prev => prev!.slice(1));
+            return;
+        }
+
+        // Removes accepted invite
+        setInviteList(prev => prev!.slice(1));
+        playerCtx!.me!.host = false;
+        socketCtx?.emit("clt_respond_invite", playerCtx?.me?.toData(), firstInvite?.inviter, accepted);
+    }   
 
     return (
         <div id="invite-card-box">
@@ -52,10 +81,9 @@ export function InviteCard(): JSX.Element | null {
                 </div>
             </div>
             <div className="response-options-box">
-                <div className="response-container" id="yes" onClick={() => {}}>✓</div>
-                <div className="response-container" id="no" onClick={() => {}}>X</div>
+                <div className="response-container" id="yes" onClick={() => handleRespondInviteCard(true)}>✓</div>
+                <div className="response-container" id="no" onClick={() => handleRespondInviteCard(false)}>X</div>
             </div>
         </div>
     );
 }
-

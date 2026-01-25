@@ -1,4 +1,4 @@
-import { UserContext } from '../contexts/UserContext';
+import { PlayerContext } from '../contexts/PlayerContext';
 import Account from '../models/Account';
 import { pickImageAndConvert } from '../utils/saveData';
 import './UserCard.css'
@@ -14,12 +14,12 @@ interface UserCardProps {
 }
 
 function UserCard(props: UserCardProps): JSX.Element {
-    const userCtx = useContext(UserContext);
+    const playerCtx = useContext(PlayerContext);
 
     const handleImageSelect = async () => {
         try {
             let success = await pickImageAndConvert(
-                userCtx?.me!, props.accountHandle,
+                playerCtx?.me!, props.accountHandle,
                 props.setProfilePicUrl, props.setLoggedAccount
             );
 
@@ -41,10 +41,10 @@ function UserCard(props: UserCardProps): JSX.Element {
         let userPfpElements = document.getElementsByClassName('user-pfp');
         Array.from(userPfpElements).forEach((img) => {
         if (img instanceof HTMLImageElement) {
-            img.src = userCtx?.profilePicUrl!;
+            img.src = playerCtx?.profilePicUrl!;
         }
         });
-    }, [userCtx?.profilePicUrl]);
+    }, [playerCtx?.profilePicUrl]);
     
     return (
         <div id="profile-template">
@@ -52,7 +52,7 @@ function UserCard(props: UserCardProps): JSX.Element {
                 <div id="profile-icon" onClick={handleImageSelect}>
                     <div className="user-pfp-placeholder" />
                     <img 
-                        src={userCtx?.profilePicUrl || " "} 
+                        src={playerCtx?.profilePicUrl || " "} 
                         className="user-pfp" 
                     />
                 </div>  
@@ -60,20 +60,20 @@ function UserCard(props: UserCardProps): JSX.Element {
 
             <div id="user-info">
                 <div className="us-info-item">
-                    <span id="name">{userCtx?.me?.nickname}</span>
+                    <span id="name">{playerCtx?.me?.nickname}</span>
                 </div>
 
                 <div className="us-info-item">
-                    <span id="level">Lv. {userCtx?.me?.level}</span>
+                    <span id="level">Lv. {playerCtx?.me?.level}</span>
                 </div>
 
                 <div className="us-info-item">
-                    <span id="status">{userCtx?.me?.status ?? "Offline"}</span>
+                    <span id="status">{playerCtx?.me?.status ?? "Offline"}</span>
                     <div 
                         id="status-icon" 
-                        className={userCtx?.me?.status === "Online" ? "online-glow" : ""}
+                        className={playerCtx?.me?.status === "Online" ? "online-glow" : ""}
                         style={{ 
-                        backgroundColor: userCtx?.me?.status === "Online" ? "#2ecc71" : "#888" 
+                        backgroundColor: playerCtx?.me?.status === "Online" ? "#2ecc71" : "#888" 
                         }}
                     />
                 </div>

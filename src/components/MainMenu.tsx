@@ -1,13 +1,14 @@
 import React, { JSX, useContext, useEffect, useRef, useState } from 'react';
 import './MainMenu.css';
 import { SocketContext } from '../contexts/SocketContext';
-import { UserContext } from '../contexts/UserContext';
-import { Player } from '../models/Player';
+import { PlayerContext } from '../contexts/PlayerContext';
+import { MatchRoom, Player, PlayerData } from '../models/Player';
 import { socket } from '../api/socket';
 import Account from '../models/Account';
 import { accountHttp } from '../api/account/accountHttp';
 import { saveAccountFile } from '../utils/saveData';
 import { getStoredAccountHandle } from '../utils/indexedDb';
+import env from '../../env.json';
 
 type MainMenuPages = "DEFAULT" | "VERSUS" | "ARCADE" |
                      "MULTIPLAYER" | "ARCADE SETTINGS" | "MY ACCOUNT"; // Stricts values that can be setted to activeSession useState
@@ -19,13 +20,14 @@ function MainMenu(props: MainMenuProps): JSX.Element {
   const fileInputRef = useRef<HTMLInputElement>(null); // References the file input element in my account page
   
   const socketCtx = useContext(SocketContext);
-  const userCtx = useContext(UserContext);
+  const playerCtx = useContext(PlayerContext);
   const loggedAccount = props.loggedAccount;
 
   const [activeSession, setActiveSession] = useState<MainMenuPages>("DEFAULT")
   const [optionTeamSize, setOptionTeamSize] = useState<number>(1);
   const [optionDifficultyIndex, setOptionDifficultyIndex] = useState<number>(2);
-  
+  const [matchRoom, setMatchRoom] = useState<MatchRoom | null>(null);
+
   const difficultyOptions: Record<number, string> = {
     1: "EASY",
     2: "NORMAL",
@@ -33,65 +35,75 @@ function MainMenu(props: MainMenuProps): JSX.Element {
     4: "INFERNAL"
   }
 
-  async function feedHostRoom(me: Player): Promise<void> {
-    if (me.hosting)
-      return;
+  function toggleRoom(activate: boolean) {
+    if (activate) {
+      const roomWrapper = document.getElementById("multiplayer-room-wrapper");
+      if (roomWrapper) {
+        roomWrapper.style.visibility = "visible"
+      }
 
-    me.hosting = true;
-    me.activeSession = true;
-  
+      const roomOptions = document.getElementById("multiplayer-room-options");
+      if (roomOptions){
+        roomOptions.style.width = "300px";
+        roomOptions.style.visibility = "visible";
+      }
+
+      const roomBox = document.getElementById("multiplayer-room-box");
+      if (roomBox) {
+        roomBox.style.width = "300px";
+        roomBox.style.visibility = "visible";
+      }
+
+      return;
+    }
+
     const roomWrapper = document.getElementById("multiplayer-room-wrapper");
     if (roomWrapper) {
-      roomWrapper.style.visibility = "visible"
+      roomWrapper.style.visibility = "hidden"
     }
 
     const roomOptions = document.getElementById("multiplayer-room-options");
     if (roomOptions){
-      roomOptions.style.width = "300px";
-      roomOptions.style.visibility = "visible";
+      roomOptions.style.width = "0px";
+      roomOptions.style.visibility = "hidden";
     }
 
     const roomBox = document.getElementById("multiplayer-room-box");
     if (roomBox) {
-      roomBox.style.width = "300px";
-      roomBox.style.visibility = "visible";
-      
-      const roomItem = document.createElement('div');
-      roomItem.className = "multiplayer-room-item";
-      roomItem.style.width = "100%";
-      
-      const avatar64Container = document.createElement('div');
-      avatar64Container.className = "profile-picture-container";
-
-      const avatar64 = document.createElement('img');
-      avatar64.className = "user-pfp";
-      avatar64.src = `${userCtx?.profilePicUrl}` || " ";
-
-      const playerNameContainer = document.createElement('div');
-      playerNameContainer.className = "player-name-container";
-
-      const playerName = document.createElement('p');
-      playerName.className = "player-name";
-      playerName.textContent = me.nickname!;
-
-      const playerLevelContainer = document.createElement('div');
-      playerLevelContainer.className = "player-level-container";
-      
-      const playerLevel = document.createElement('p');
-      playerLevel.className = "player-level"
-      playerLevel.textContent = "Lv. " + (me.level.toString());
-
-      avatar64Container.appendChild(avatar64);
-      playerNameContainer.appendChild(playerName);
-      playerLevelContainer.appendChild(playerLevel);
-      roomItem.appendChild(avatar64Container);
-      roomItem.appendChild(playerNameContainer);
-      roomItem.appendChild(playerLevelContainer);
-      roomBox.appendChild(roomItem);
+      roomBox.style.width = "0px";
+      roomBox.style.visibility = "hidden";
     }
   }
 
+  function addPlayerToRoom(player: Player | PlayerData) {
+    // Never adds itself (player) to connectedPlayers array field, and prevents duplicate entries
+    if (player.socketId !== playerCtx!.me!.socketId && 
+      !playerCtx?.me?.matchRoom.connectedPlayers.some(
+      p => p.socketId === player.socketId)
+    ) {
+      playerCtx?.me?.matchRoom.connectedPlayers.push(player);
+    }
+    console.log(playerCtx?.me?.matchRoom.connectedPlayers)
+
+    buildRowInMatchRoom(player);
+  }
+
+  function updateRoom(players: PlayerData[] | null): void {
+    const roomBox = document.getElementById("multiplayer-room-box");
+    if (roomBox) {
+      roomBox.innerHTML = "";
+    }
+
+    if (players) {
+      players.forEach((p) => {
+        addPlayerToRoom(p);
+      });
+    }
+  }
+
+
   async function handleSelectOnline(): Promise<void> {
+    if (socketCtx?.connected) return;
     socketCtx?.connect();
 
     const connectionPromise = new Promise<void>((resolve) => {
@@ -105,7 +117,7 @@ function MainMenu(props: MainMenuProps): JSX.Element {
 
     try {
       await Promise.race([connectionPromise, timeoutPromise]);
-      if (socketCtx?.connected && userCtx?.me) {
+      if (socketCtx?.connected && playerCtx?.me) {
         let response
         if (loggedAccount) {
           response = await accountHttp.upsertAccount(loggedAccount);
@@ -122,19 +134,27 @@ function MainMenu(props: MainMenuProps): JSX.Element {
         
         const updatedMe: Player = new Player(response.id, socket.id!, response.nickname, response.level, "Online") 
         
-        userCtx.setMe(updatedMe);
-        feedHostRoom(updatedMe);
         // Sends the player of this account to the websocket
         socketCtx.emit('clt_sending_player', updatedMe);
-        
+        updatedMe.host = true; // since this creates your initial room
+        playerCtx.setMe(updatedMe);
+        toggleRoom(true);
+        updateRoom([updatedMe]);
+
         // Grabs other players connected to the websocket
         socketCtx.on('svr_global_connected_players', (playerList: Player[]) => {
           const filteredArray = playerList.filter(p => p.socketId != updatedMe.socketId);
           Player.globalPlayerList = filteredArray;
-          console.warn(Player.globalPlayerList);
         });
-      
-        setActiveSession("MULTIPLAYER");
+
+        socketCtx?.on("svr_give_updated_matchRoom", (matchRoom: MatchRoom) => {
+          console.log("Chegada do server", matchRoom)
+          setMatchRoom(prevRoom => {
+            return matchRoom
+          });
+
+          setActiveSession("MULTIPLAYER");
+        });
       }
     } catch (error) {
       if (error == "Couldn't save account file") {
@@ -177,14 +197,10 @@ function MainMenu(props: MainMenuProps): JSX.Element {
     setActiveSession("DEFAULT");
   }
 
-  const backMap: Record<MainMenuPages, MainMenuPages | null> = {
-    "DEFAULT": null,
-    "VERSUS" : "DEFAULT",
-    "ARCADE" : "DEFAULT",
-    "MULTIPLAYER" : "DEFAULT",
-    "ARCADE SETTINGS" : "ARCADE",
-    "MY ACCOUNT" : "DEFAULT"
-  }
+  // Tracks matchRoom useEffect to run updates on players matchroom and UI matchroom
+  useEffect(() => {
+    updateRoom(matchRoom?.connectedPlayers!);
+  }, [matchRoom]);
 
   // Handles life cycle for listener through main menu pages
   useEffect(() => {
@@ -203,6 +219,15 @@ function MainMenu(props: MainMenuProps): JSX.Element {
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [activeSession]);
+
+  const backMap: Record<MainMenuPages, MainMenuPages | null> = {
+    "DEFAULT": null,
+    "VERSUS" : "DEFAULT",
+    "ARCADE" : "DEFAULT",
+    "MULTIPLAYER" : "DEFAULT",
+    "ARCADE SETTINGS" : "ARCADE",
+    "MY ACCOUNT" : "DEFAULT"
+  }
 
   const mainMenuSessions: Record<string, JSX.Element> = {
     "DEFAULT": 
@@ -278,5 +303,47 @@ function MainMenu(props: MainMenuProps): JSX.Element {
     </>
   );
 };
+
+function buildRowInMatchRoom(player: Player | PlayerData) {
+  const roomBox = document.getElementById("multiplayer-room-box");
+  if (roomBox) {
+    roomBox.style.width = "300px";
+    roomBox.style.visibility = "visible";
+    
+    const roomItem = document.createElement('div');
+    roomItem.className = "multiplayer-room-item";
+    roomItem.style.width = "100%";
+    
+    const avatar64Container = document.createElement('div');
+    avatar64Container.className = "profile-picture-container";
+
+    const avatar64 = document.createElement('img');
+    avatar64.className = "user-pfp";
+    avatar64.src = `${env.SERVER_URL}/accounts/${player.accountId}/avatar`;
+    avatar64.alt = "";
+
+    const playerNameContainer = document.createElement('div');
+    playerNameContainer.className = "player-name-container";
+
+    const playerName = document.createElement('p');
+    playerName.className = "player-name";
+    playerName.textContent = player.nickname!;
+
+    const playerLevelContainer = document.createElement('div');
+    playerLevelContainer.className = "player-level-container";
+    
+    const playerLevel = document.createElement('p');
+    playerLevel.className = "player-level";
+    playerLevel.textContent = "Lv. " + player.level.toString();
+
+    avatar64Container.appendChild(avatar64);
+    playerNameContainer.appendChild(playerName);
+    playerLevelContainer.appendChild(playerLevel);
+    roomItem.appendChild(avatar64Container);
+    roomItem.appendChild(playerNameContainer);
+    roomItem.appendChild(playerLevelContainer);
+    roomBox.appendChild(roomItem);
+  }
+}
 
 export default MainMenu;
