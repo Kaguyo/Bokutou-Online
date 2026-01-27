@@ -83,7 +83,6 @@ function MainMenu(props: MainMenuProps): JSX.Element {
     ) {
       playerCtx?.me?.matchRoom.connectedPlayers.push(player);
     }
-    console.log(playerCtx?.me?.matchRoom.connectedPlayers)
 
     buildRowInMatchRoom(player);
   }

@@ -54,19 +54,26 @@ export default function setupWebSocketServer(server: import("http").Server  | im
             
             console.log(`Player ${playerData.nickname} accepted ${inviter.nickname}'s invite`);
             
-            const oldRoom = inviter.matchRoom;
-            if (!oldRoom.connectedPlayers?.some(p => p.socketId == instanciatedInviter.socketId))
-                oldRoom.connectedPlayers?.push(instanciatedInviter.toData());
+            const oldRoom = Player.globalPlayerList.find(p => p.socketId == inviter.socketId)?.matchRoom;
+            if (!oldRoom?.connectedPlayers?.some(p => p.socketId == instanciatedInviter.socketId)){
+                // Adds inviter to the oldRoom to keep exact sequence in the list organization
+                oldRoom?.connectedPlayers?.push(instanciatedInviter.toData());
+            }
 
-            const updatedRoom = inviter.matchRoom;
-            if (!oldRoom.connectedPlayers?.some(p => p.socketId == playerData.socketId))
-                updatedRoom.connectedPlayers?.push(playerData);
+            const updatedRoom = Player.globalPlayerList.find(p => p.socketId == inviter.socketId)?.matchRoom;
 
-            updatedRoom.connectedPlayers?.forEach((p) => {
+            if (!updatedRoom?.connectedPlayers?.some(p => p.socketId == playerData.socketId))
+                updatedRoom?.connectedPlayers?.push(playerData);
+
+            updatedRoom?.connectedPlayers?.forEach((p) => {
                 if (![playerData.accountId].includes(p.accountId)) {
+                    // Keeps players' matchroom syncronized
+                    Player.globalPlayerList.find(pl => pl.socketId == p.socketId)!.matchRoom = updatedRoom;
                     io.to(p.socketId).emit("svr_give_updated_matchRoom", updatedRoom);
                 } else {
-                    io.to(p.socketId).emit("svr_give_updated_matchRoom", oldRoom);
+                    // Keeps invited player's matchroom syncronized
+                    Player.globalPlayerList.find(pl => pl.socketId == playerData.socketId)!.matchRoom = oldRoom!;
+                    io.to(p.socketId).emit("svr_give_updated_matchRoom", oldRoom!);
                 }
             });
         });
