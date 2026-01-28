@@ -57,7 +57,13 @@ export function InviteCard(): JSX.Element | null {
         // Removes accepted invite
         setInviteList(prev => prev!.slice(1));
         playerCtx!.me!.host = false;
+        if (playerCtx!.me!.matchRoom.connectedPlayers.filter(
+            p => p.accountId != playerCtx?.me?.accountId).length > 0
+        ) socketCtx?.emit("clt_leave_matchroom", playerCtx?.me, firstInvite?.inviter.matchRoom) 
+        
+        playerCtx!.me!.matchRoom.connectedPlayers = []; // Resets my matchroom since we just left one
         socketCtx?.emit("clt_respond_invite", playerCtx?.me?.toData(), firstInvite?.inviter, accepted);
+        
     }   
 
     return (

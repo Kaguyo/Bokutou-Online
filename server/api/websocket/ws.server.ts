@@ -2,11 +2,13 @@ import { Server as IOServer, Socket } from "socket.io";
 import Player, { MatchRoom, PlayerData } from "../../domain/entities/player.js";
 import Listener from "./listeners/listener.js";
 import Subscriber from "./subscribers/subscriber.js";
+import { Logger } from "../../resources/utils.js";
 
 interface ClientToServerEvents {
   clt_sending_player: (playerData: PlayerData) => void;
   clt_inviting_player: (socketId: string, inviter: Player) => void;
   clt_respond_invite: (invitedPlayer: PlayerData, inviter: Player, acceptInvite: boolean ) => Promise<MatchRoom | null>;
+  clt_leave_matchroom: (disconnectedPlayer: PlayerData, newRoom: MatchRoom | null) => void;
 }
 
 interface ServerToClientEvents {
@@ -15,13 +17,14 @@ interface ServerToClientEvents {
   svr_give_updated_matchRoom: (matchRoom: MatchRoom) => void;
 }
 
+
 export default function setupWebSocketServer(server: import("http").Server  | import("https").Server) {
     const io = new IOServer<ClientToServerEvents, ServerToClientEvents>(server, {
         cors: { origin: '*' }
     });
 
     io.on('connection', (socket: Socket) => {
-        console.log(`Player connected with ID: ${socket.id}`);
+        Logger(`Player connected with ID: ${socket.id}`);
         socket.on('clt_sending_player', (playerData: PlayerData) => {
             const p = new Player(
             playerData.accountId, playerData.nickname, playerData.level,
@@ -36,7 +39,7 @@ export default function setupWebSocketServer(server: import("http").Server  | im
         });
 
         socket.on('disconnect', () => {
-            console.log(`User disconnected with ID: ${socket.id}`);
+            Logger(`User disconnected with ID: ${socket.id}`);
             Listener.receiveDisconnection(socket);
             Subscriber.answerDisconnection(socket, io);
         });
@@ -52,7 +55,7 @@ export default function setupWebSocketServer(server: import("http").Server  | im
                 inviter.socketId
             );
             
-            console.log(`Player ${playerData.nickname} accepted ${inviter.nickname}'s invite`);
+            Logger(`Player ${playerData.nickname} accepted ${inviter.nickname}'s invite`);
             
             const oldRoom = Player.globalPlayerList.find(p => p.socketId == inviter.socketId)?.matchRoom;
             if (!oldRoom?.connectedPlayers?.some(p => p.socketId == instanciatedInviter.socketId)){
@@ -76,6 +79,12 @@ export default function setupWebSocketServer(server: import("http").Server  | im
                     io.to(p.socketId).emit("svr_give_updated_matchRoom", oldRoom!);
                 }
             });
+        });
+
+        socket.on('clt_leave_matchroom', (disconnectedPlayer: PlayerData, newRoom: MatchRoom | null) => {
+            Listener.leaveMatchRoom(disconnectedPlayer, io);
+            if (newRoom) return; // if theres replacing room, server doesn't feedback player for their disconnection
+            Subscriber.leaveMatchRoom(disconnectedPlayer, io); // feeds player's UI and server data
         });
     });
 }

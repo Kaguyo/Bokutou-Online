@@ -13,6 +13,7 @@ interface ClientToServerEvents {
   clt_sending_player: (player: PlayerData) => void;
   clt_inviting_player: (invitedPlayerSocketId: string, host: Player) => void;
   clt_respond_invite: (invitedPlayer: PlayerData, inviter: Player, acceptInvite: boolean ) => Promise<MatchRoom | null>;
+  clt_leave_matchroom: (disconnectedPlayer: PlayerData, newRoom: MatchRoom | null) => void;
 }
 
 export const socket: Socket<ServerToClientEvents, ClientToServerEvents> =
