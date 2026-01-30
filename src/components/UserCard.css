@@ -33,7 +33,7 @@
   width: 96px;
   border-radius: 20%;
   height: 96px;
-} #profile-icon .user-pfp {
+} #profile-icon .user-pfp, #profile-icon .player-pfp {
   width: 100%;
   height: 100%;
   border-radius: 20%;

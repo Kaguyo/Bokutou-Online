@@ -75,7 +75,51 @@ function MainMenu(props: MainMenuProps): JSX.Element {
     }
   }
 
-  function addPlayerToRoom(player: Player | PlayerData) {
+  function buildRowInMatchRoom(player: Player | PlayerData, isMe: boolean) {
+  const roomBox = document.getElementById("multiplayer-room-box");
+  if (roomBox) {
+    roomBox.style.width = "300px";
+    roomBox.style.visibility = "visible";
+    
+    const roomItem = document.createElement('div');
+    roomItem.className = "multiplayer-room-item";
+    roomItem.style.width = "100%";
+    
+    const avatar64Container = document.createElement('div');
+    avatar64Container.className = "profile-picture-container";
+
+    const avatar64 = document.createElement('img');
+    avatar64.className = isMe === true ? "user-pfp" : "player-pfp";
+    console.log("Valor:",isMe);
+    avatar64.src = `${env.SERVER_URL}/accounts/${player.accountId}/avatar`;
+    avatar64.alt = "";
+
+    const playerNameContainer = document.createElement('div');
+    playerNameContainer.className = "player-name-container";
+
+    const playerName = document.createElement('p');
+    playerName.className = "player-name";
+    playerName.textContent = player.nickname!;
+
+    const playerLevelContainer = document.createElement('div');
+    playerLevelContainer.className = "player-level-container";
+    
+    const playerLevel = document.createElement('p');
+    playerLevel.className = "player-level";
+    playerLevel.textContent = "Lv. " + player.level.toString();
+
+    avatar64Container.appendChild(avatar64);
+    playerNameContainer.appendChild(playerName);
+    playerLevelContainer.appendChild(playerLevel);
+    roomItem.appendChild(avatar64Container);
+    roomItem.appendChild(playerNameContainer);
+    roomItem.appendChild(playerLevelContainer);
+    roomBox.appendChild(roomItem);
+  }
+}
+
+
+  function addPlayerToRoom(player: Player | PlayerData, isMe: boolean = false) {
     // Never adds itself (player) to connectedPlayers array field, and prevents duplicate entries
     if (player.socketId !== playerCtx!.me!.socketId && 
       !playerCtx?.me?.matchRoom.connectedPlayers.some(
@@ -84,7 +128,7 @@ function MainMenu(props: MainMenuProps): JSX.Element {
       playerCtx?.me?.matchRoom.connectedPlayers.push(player);
     }
 
-    buildRowInMatchRoom(player);
+    buildRowInMatchRoom(player, isMe);
   }
 
   function updateRoom(players: PlayerData[] | null): void {
@@ -95,7 +139,8 @@ function MainMenu(props: MainMenuProps): JSX.Element {
 
     if (players) {
       players.forEach((p) => {
-        addPlayerToRoom(p);
+        const isMeForThisPlayer = p.accountId === playerCtx?.me?.accountId;
+        addPlayerToRoom(p, isMeForThisPlayer);
       });
     }
   }
@@ -302,47 +347,5 @@ function MainMenu(props: MainMenuProps): JSX.Element {
     </>
   );
 };
-
-function buildRowInMatchRoom(player: Player | PlayerData) {
-  const roomBox = document.getElementById("multiplayer-room-box");
-  if (roomBox) {
-    roomBox.style.width = "300px";
-    roomBox.style.visibility = "visible";
-    
-    const roomItem = document.createElement('div');
-    roomItem.className = "multiplayer-room-item";
-    roomItem.style.width = "100%";
-    
-    const avatar64Container = document.createElement('div');
-    avatar64Container.className = "profile-picture-container";
-
-    const avatar64 = document.createElement('img');
-    avatar64.className = "user-pfp";
-    avatar64.src = `${env.SERVER_URL}/accounts/${player.accountId}/avatar`;
-    avatar64.alt = "";
-
-    const playerNameContainer = document.createElement('div');
-    playerNameContainer.className = "player-name-container";
-
-    const playerName = document.createElement('p');
-    playerName.className = "player-name";
-    playerName.textContent = player.nickname!;
-
-    const playerLevelContainer = document.createElement('div');
-    playerLevelContainer.className = "player-level-container";
-    
-    const playerLevel = document.createElement('p');
-    playerLevel.className = "player-level";
-    playerLevel.textContent = "Lv. " + player.level.toString();
-
-    avatar64Container.appendChild(avatar64);
-    playerNameContainer.appendChild(playerName);
-    playerLevelContainer.appendChild(playerLevel);
-    roomItem.appendChild(avatar64Container);
-    roomItem.appendChild(playerNameContainer);
-    roomItem.appendChild(playerLevelContainer);
-    roomBox.appendChild(roomItem);
-  }
-}
 
 export default MainMenu;
