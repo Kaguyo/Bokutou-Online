@@ -1,7 +1,15 @@
-import { createContext, useContext } from "react";
+import { createContext, Dispatch, SetStateAction, useContext } from "react";
 import { Socket } from "socket.io-client";
+import { Player } from "../models/Player";
 
-export const SocketContext = createContext<Socket | null>(null);
+
+interface SocketContextType {
+    socket: Socket,
+    globalPlayerList: Player[],
+    setGlobalPlayerList: Dispatch<SetStateAction<Player[]>>;
+}
+
+export const SocketContext = createContext<SocketContextType | null>(null);
 
 export function useSocket() {
     const ctx = useContext(SocketContext);

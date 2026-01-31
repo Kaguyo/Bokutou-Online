@@ -147,12 +147,12 @@ function MainMenu(props: MainMenuProps): JSX.Element {
 
 
   async function handleSelectOnline(): Promise<void> {
-    if (socketCtx?.connected) return;
-    socketCtx?.connect();
+    if (socketCtx?.socket.connected) return;
+    socketCtx?.socket.connect();
 
     const connectionPromise = new Promise<void>((resolve) => {
-      if (socketCtx?.connected) return resolve();
-      socketCtx?.once('connect', () => resolve());
+      if (socketCtx?.socket.connected) return resolve();
+      socketCtx?.socket.once('connect', () => resolve());
     });
 
     const timeoutPromise = new Promise((_, reject) =>
@@ -161,7 +161,7 @@ function MainMenu(props: MainMenuProps): JSX.Element {
 
     try {
       await Promise.race([connectionPromise, timeoutPromise]);
-      if (socketCtx?.connected && playerCtx?.me) {
+      if (socketCtx?.socket.connected && playerCtx?.me) {
         let response
         if (loggedAccount) {
           response = await accountHttp.upsertAccount(loggedAccount);
@@ -179,19 +179,20 @@ function MainMenu(props: MainMenuProps): JSX.Element {
         const updatedMe: Player = new Player(response.id, socket.id!, response.nickname, response.level, "Online") 
         
         // Sends the player of this account to the websocket
-        socketCtx.emit('clt_sending_player', updatedMe);
+        socketCtx.socket.emit('clt_sending_player', updatedMe);
         updatedMe.host = true; // since this creates your initial room
         playerCtx.setMe(updatedMe);
         toggleRoom(true);
         updateRoom([updatedMe]);
 
         // Grabs other players connected to the websocket
-        socketCtx.on('svr_global_connected_players', (playerList: Player[]) => {
+        socketCtx.socket.on('svr_global_connected_players', (playerList: Player[]) => {
           const filteredArray = playerList.filter(p => p.socketId != updatedMe.socketId);
           Player.globalPlayerList = filteredArray;
+          socketCtx.setGlobalPlayerList(filteredArray);
         });
 
-        socketCtx?.on("svr_give_updated_matchRoom", (matchRoom: MatchRoom) => {
+        socketCtx?.socket.on("svr_give_updated_matchRoom", (matchRoom: MatchRoom) => {
           console.log("Chegada do server", matchRoom)
           setMatchRoom(prevRoom => {
             return matchRoom
@@ -217,7 +218,7 @@ function MainMenu(props: MainMenuProps): JSX.Element {
         */
       } else {
         console.error("Error when attempting to connect to the server:", error);
-        socketCtx?.disconnect();
+        socketCtx?.socket.disconnect();
         return;
       }
     }

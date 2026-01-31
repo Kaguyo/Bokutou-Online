@@ -4,9 +4,11 @@ import { PlayerContext } from '../contexts/PlayerContext';
 import { Player } from "../models/Player";
 import { socket } from "../api/socket";
 import env from '../../env.json'
+import { SocketContext } from "../contexts/SocketContext";
 
 function MatchRoom(): JSX.Element {
     const playerCtx = useContext(PlayerContext);
+    const socketCtx = useContext(SocketContext);
     const [searchingGlobalPlayers, setSearchingGlobalPlayers] = useState<boolean>(false);
 
     function handleGlobalPlayerListBtn(newMode: boolean): void {
@@ -47,6 +49,11 @@ function MatchRoom(): JSX.Element {
         };
         
     }, [searchingGlobalPlayers])
+
+    // useEffect to automatically update Player Search List in this UI Component
+    useEffect(() => {
+        
+    }, [socketCtx?.globalPlayerList]);
 
     return (
         <>

@@ -155,9 +155,6 @@
     font-weight: bold;
     border-radius: 4px;
     transition: 0.2s;
-    /* position: relative;
-    transform: translateX(-100%);
-    left: 100%; */
 }
 
 #options-bar #exit-btn:hover {

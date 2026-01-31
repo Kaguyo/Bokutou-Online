@@ -24,6 +24,7 @@ function App() {
   const [profilePicUrl, setProfilePicUrl] = useState<string | null>(null);
   const [inviteList, setInviteList] = useState<Invite[]>([]);
   const [loggedAccount, setLoggedAccount] = useState<Account | null>(null);
+  const [globalPlayerList, setGlobalPlayerList] = useState<Player[]>([]);
 
   async function handleSelectAccount(
     setIsLoading: Dispatch<SetStateAction<boolean>> | null = null,
@@ -60,6 +61,7 @@ function App() {
     }
   };
   
+
   // useEffect for invites sent to this client
   useEffect(() => {
     function handleNewInvite(newInviter: Player) {
@@ -119,7 +121,7 @@ function App() {
 
   return (
     <>
-      <SocketContext.Provider value={socket}>
+      <SocketContext.Provider value={{socket: socket, globalPlayerList: globalPlayerList, setGlobalPlayerList}}>
         <PlayerContext.Provider value={{me: me, setMe, profilePicUrl: profilePicUrl, setProfilePicUrl}}>
           <InviteContext.Provider value={{ inviteList: inviteList, setInviteList}}>
             <h1>Bokutou no Game</h1>

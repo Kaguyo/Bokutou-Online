@@ -10,12 +10,12 @@ export default class Subscriber {
   }
 
   static answerConnection(socket: Socket, io: Server) {
-    Logger('Responding to player connection: ' + socket.id);
+    Logger('Distributing new global list after connection from Player: ' + socket.id);
     io.emit('svr_global_connected_players', Subscriber.getSerializablePlayerList());  
 }
 
   static answerDisconnection(socket: Socket, io: Server) {
-    Logger('Responding to player disconnection: ' + socket.id);
+    Logger('Distributing new global list after disconnection from Player: ' + socket.id);
     io.emit('svr_global_connected_players', Subscriber.getSerializablePlayerList());
   }
 
