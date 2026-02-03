@@ -16,6 +16,7 @@ export interface MatchRoom {
     sessionLocked: boolean;
     connectedPlayers: PlayerData[];
     sessionPassword: string;
+    playerIndexInRoom: number;
 }
 
 export class Player {
@@ -33,7 +34,8 @@ export class Player {
     matchRoom: MatchRoom = {
         sessionLocked: true,
         sessionPassword: "",
-        connectedPlayers: []
+        connectedPlayers: [],
+        playerIndexInRoom: 0
     }
 
     constructor(accountId: string, socketId: string, nickname: string, level: number, status: string){

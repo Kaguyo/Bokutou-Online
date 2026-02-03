@@ -25,11 +25,12 @@ export default class Subscriber {
     that may have been with them before the disconnection
   */
   static leaveMatchRoom(disconnectedPlayer: PlayerData, io: Server) {
-    Logger(`Responding to MatchRoom disconnection for player: ${disconnectedPlayer.nickname}`);
+    Logger(`Responding to MatchRoom disconnection for player: ${disconnectedPlayer.socketId}`);
     const newMatchRoom: MatchRoom = {
       connectedPlayers: [],
       sessionLocked: true,
-      sessionPassword: ""
+      sessionPassword: "",
+      playerIndexInRoom: 0
     };
 
     Player.globalPlayerList.find(p => p.socketId == disconnectedPlayer.socketId)!.matchRoom = newMatchRoom;

@@ -6,6 +6,7 @@ export interface MatchRoom {
     sessionLocked: boolean;
     sessionPassword: string;
     connectedPlayers: PlayerData[];
+    playerIndexInRoom: number;
 }
 
 export interface PlayerData {
@@ -30,7 +31,8 @@ export default class Player {
     matchRoom: MatchRoom = {
         sessionLocked: true,
         sessionPassword: "",
-        connectedPlayers: []
+        connectedPlayers: [],
+        playerIndexInRoom: 0
     }
 
     static globalPlayerList: Player[] = [];

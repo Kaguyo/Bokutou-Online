@@ -5,7 +5,7 @@ import Subscriber from "./subscribers/subscriber.js";
 import { Logger } from "../../resources/utils.js";
 
 interface ClientToServerEvents {
-  clt_sending_player: (playerData: PlayerData) => void;
+  clt_sending_player: (invitedPlayer: PlayerData) => void;
   clt_inviting_player: (socketId: string, inviter: Player) => void;
   clt_respond_invite: (invitedPlayer: PlayerData, inviter: Player, acceptInvite: boolean ) => Promise<MatchRoom | null>;
   clt_leave_matchroom: (disconnectedPlayer: PlayerData, newRoom: MatchRoom | null) => void;
@@ -25,10 +25,10 @@ export default function setupWebSocketServer(server: import("http").Server  | im
 
     io.on('connection', (socket: Socket) => {
         Logger(`Player connected with ID: ${socket.id}`);
-        socket.on('clt_sending_player', (playerData: PlayerData) => {
+        socket.on('clt_sending_player', (invitedPlayer: PlayerData) => {
             const p = new Player(
-            playerData.accountId, playerData.nickname, playerData.level,
-            playerData.status, socket.id
+            invitedPlayer.accountId, invitedPlayer.nickname, invitedPlayer.level,
+            invitedPlayer.status, socket.id
             )
             Listener.receiveConnection(p);
             Subscriber.answerConnection(socket, io); 
@@ -40,44 +40,88 @@ export default function setupWebSocketServer(server: import("http").Server  | im
 
         socket.on('disconnect', () => {
             Logger(`User disconnected with ID: ${socket.id}`);
+            
+            const p = Player.globalPlayerList.find(p => p.socketId == socket.id);
+            if (!p) return;
+
+            // Updates matchroom for player's teammates before server removes this respected player from global list
+            Listener.leaveMatchRoom(p.toData(), io);
+
+            // Removes from global list (receiveDisconnection), then updates every client (answerDisconnection)
             Listener.receiveDisconnection(socket);
             Subscriber.answerDisconnection(socket, io);
         });
 
-        socket.on('clt_respond_invite', (playerData: PlayerData, inviter: Player, accepted) => {
+        socket.on('clt_respond_invite', (invitedPlayer: PlayerData, inviter: Player, accepted: boolean) => {
             if (!accepted) return;
 
-            const instanciatedInviter = new Player(
-                inviter.accountId,
-                inviter.nickname,
-                inviter.level,
-                inviter.status,
-                inviter.socketId
-            );
+            // 1. Find the source room
+            const sourcePlayer = Player.globalPlayerList.find(p => p.socketId == inviter.socketId);
+            if (!sourcePlayer || !sourcePlayer.matchRoom) return;
+
+            // 2. New room containing every single player that is expected to be there after invited player joined
+            const updatedRoom: MatchRoom = structuredClone(sourcePlayer.matchRoom);
+            updatedRoom.connectedPlayers.push(sourcePlayer.toData());
             
-            Logger(`Player ${playerData.nickname} accepted ${inviter.nickname}'s invite`);
+
+
+            const p = Player.globalPlayerList.find(x => x.socketId == invitedPlayer.socketId);
+            if (!p) return;
+
+            // 3. Initial value for invited target's index in room
+            p.matchRoom.playerIndexInRoom = updatedRoom.connectedPlayers.length;
+
+            // 4. Actual room that will be distributed to UI and server instances updates
+            updatedRoom.connectedPlayers.push(p.toData());
+
+            // 5. New list to sort updatedList
+            const newOrganizedPlayerList: Player[] = [];
+
+            // 6. Fills up list to start sorting
+            updatedRoom.connectedPlayers.forEach((x) => {
+                const _ = Player.globalPlayerList.find((pl => pl.socketId == x.socketId));
+                if (_) newOrganizedPlayerList.push(_);
+            });
             
-            const oldRoom = Player.globalPlayerList.find(p => p.socketId == inviter.socketId)?.matchRoom;
-            if (!oldRoom?.connectedPlayers?.some(p => p.socketId == instanciatedInviter.socketId)){
-                // Adds inviter to the oldRoom to keep exact sequence in the list organization
-                oldRoom?.connectedPlayers?.push(instanciatedInviter.toData());
-            }
+            // 7. Clears previous array and sorts players by playerIndexInRoom (ascending)
+            updatedRoom.connectedPlayers = [];
 
-            const updatedRoom = Player.globalPlayerList.find(p => p.socketId == inviter.socketId)?.matchRoom;
+            // Sort newOrganizedPlayerList by playerIndexInRoom ascending
+            newOrganizedPlayerList.sort((a, b) => a.matchRoom.playerIndexInRoom - b.matchRoom.playerIndexInRoom);
 
-            if (!updatedRoom?.connectedPlayers?.some(p => p.socketId == playerData.socketId))
-                updatedRoom?.connectedPlayers?.push(playerData);
+            // Fill updatedRoom.connectedPlayers with sorted players
+            Logger("LISTA SORTED:")
+            newOrganizedPlayerList.forEach((p) => {
+                console.log(p);
+                updatedRoom.connectedPlayers.push(p.toData());
+            });
 
-            updatedRoom?.connectedPlayers?.forEach((p) => {
-                if (![playerData.accountId].includes(p.accountId)) {
-                    // Keeps players' matchroom syncronized
-                    Player.globalPlayerList.find(pl => pl.socketId == p.socketId)!.matchRoom = updatedRoom;
-                    io.to(p.socketId).emit("svr_give_updated_matchRoom", updatedRoom);
-                } else {
-                    // Keeps invited player's matchroom syncronized
-                    Player.globalPlayerList.find(pl => pl.socketId == playerData.socketId)!.matchRoom = oldRoom!;
-                    io.to(p.socketId).emit("svr_give_updated_matchRoom", oldRoom!);
-                }
+            // 8. Update server-side matchrooms and send to clients
+            updatedRoom.connectedPlayers.forEach((playerData) => {
+                const playerInstance = Player.globalPlayerList.find(pl => pl.socketId == playerData.socketId);
+                if (!playerInstance) return;
+
+                // Create server-side matchroom that excludes themselves
+                const serverSideRoom: MatchRoom = {
+                    ...updatedRoom,
+                    connectedPlayers: updatedRoom.connectedPlayers.filter(p => p.socketId !== playerData.socketId),
+                    // PRESERVE the playerIndexInRoom from the actual player instance
+                    playerIndexInRoom: playerInstance.matchRoom.playerIndexInRoom
+                };
+
+                // Create client-side matchroom that includes themselves for UI building
+                const clientSideRoom: MatchRoom = {
+                    ...updatedRoom,
+                    connectedPlayers: [...updatedRoom.connectedPlayers],
+                    // PRESERVE the playerIndexInRoom
+                    playerIndexInRoom: playerInstance.matchRoom.playerIndexInRoom
+                };
+
+                // Update the player's matchroom in the global list
+                playerInstance.matchRoom = serverSideRoom;
+
+                // Send to client: with themselves included
+                io.to(playerData.socketId).emit("svr_give_updated_matchRoom", clientSideRoom);
             });
         });
 

@@ -90,7 +90,6 @@ function MainMenu(props: MainMenuProps): JSX.Element {
 
     const avatar64 = document.createElement('img');
     avatar64.className = isMe === true ? "user-pfp" : "player-pfp";
-    console.log("Valor:",isMe);
     avatar64.src = `${env.SERVER_URL}/accounts/${player.accountId}/avatar`;
     avatar64.alt = "";
 
@@ -136,6 +135,8 @@ function MainMenu(props: MainMenuProps): JSX.Element {
     if (roomBox) {
       roomBox.innerHTML = "";
     }
+
+    console.log("Chegada de PlayerList:", players);
 
     if (players) {
       players.forEach((p) => {
